@@ -37,6 +37,8 @@
   },
   "scripts": {
     "build": "tsc --build",
+    "format": "prettier --write ./lib",
+    "lint": "eslint --fix ./lib",
     "mocha": "mocha test/*-test.js",
     "test": "nyc --reporter=text --reporter=lcov npm run mocha"
   },
