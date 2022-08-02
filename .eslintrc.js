@@ -9,8 +9,10 @@ module.exports = {
   env: {
     node: true,
     es2016: true,
+    mocha: true,
   },
   rules: {
     '@typescript-eslint/ban-ts-comment': ['off'],
+    'no-var': ['error'],
   },
 };
