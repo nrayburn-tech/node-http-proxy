@@ -1,79 +1,79 @@
 var httpProxy = require('../lib/http-proxy/passes/ws-incoming'),
-    expect = require('expect.js');
+  expect = require('expect.js');
 
 describe('lib/http-proxy/passes/ws-incoming.js', function () {
   describe('#checkMethodAndHeader', function () {
     it('should drop non-GET connections', function () {
       var destroyCalled = false,
-      stubRequest = {
-        method: 'DELETE',
-        headers: {}
-      },
-      stubSocket = { 
-        destroy: function () {
-          // Simulate Socket.destroy() method when call
-          destroyCalled = true;
-        }
-      }
+        stubRequest = {
+          method: 'DELETE',
+          headers: {},
+        },
+        stubSocket = {
+          destroy: function () {
+            // Simulate Socket.destroy() method when call
+            destroyCalled = true;
+          },
+        };
       returnValue = httpProxy.checkMethodAndHeader(stubRequest, stubSocket);
       expect(returnValue).to.be(true);
       expect(destroyCalled).to.be(true);
-    })
+    });
 
     it('should drop connections when no upgrade header', function () {
       var destroyCalled = false,
-      stubRequest = {
-        method: 'GET',
-        headers: {}
-      },
-      stubSocket = {
-        destroy: function () {
-          // Simulate Socket.destroy() method when call
-          destroyCalled = true;
-        }
-      }
+        stubRequest = {
+          method: 'GET',
+          headers: {},
+        },
+        stubSocket = {
+          destroy: function () {
+            // Simulate Socket.destroy() method when call
+            destroyCalled = true;
+          },
+        };
       returnValue = httpProxy.checkMethodAndHeader(stubRequest, stubSocket);
       expect(returnValue).to.be(true);
       expect(destroyCalled).to.be(true);
-    })
+    });
 
     it('should drop connections when upgrade header is different of `websocket`', function () {
       var destroyCalled = false,
-      stubRequest = {
-        method: 'GET',
-        headers: {
-          upgrade: 'anotherprotocol'
-        }
-      },
-      stubSocket = {
-        destroy: function () {
-          // Simulate Socket.destroy() method when call
-          destroyCalled = true;
-        }
-      }
+        stubRequest = {
+          method: 'GET',
+          headers: {
+            upgrade: 'anotherprotocol',
+          },
+        },
+        stubSocket = {
+          destroy: function () {
+            // Simulate Socket.destroy() method when call
+            destroyCalled = true;
+          },
+        };
       returnValue = httpProxy.checkMethodAndHeader(stubRequest, stubSocket);
       expect(returnValue).to.be(true);
       expect(destroyCalled).to.be(true);
-    })
+    });
 
     it('should return nothing when all is ok', function () {
       var destroyCalled = false,
-      stubRequest = {
-        method: 'GET',
-        headers: {
-          upgrade: 'websocket'
-        }
-      },
-      stubSocket = {
-        destroy: function () {
-          // Simulate Socket.destroy() method when call
-          destroyCalled = true;
-        }
-      }
+        stubRequest = {
+          method: 'GET',
+          headers: {
+            upgrade: 'websocket',
+          },
+        },
+        stubSocket = {
+          destroy: function () {
+            // Simulate Socket.destroy() method when call
+            destroyCalled = true;
+          },
+        };
       returnValue = httpProxy.checkMethodAndHeader(stubRequest, stubSocket);
       expect(returnValue).to.be(undefined);
       expect(destroyCalled).to.be(false);
-    })
+    });
   });
 
   describe('#XHeaders', function () {
@@ -86,12 +86,12 @@ describe('lib/http-proxy/passes/ws-incoming.js', function () {
       var stubRequest = {
         connection: {
           remoteAddress: '192.168.1.2',
-          remotePort: '8080'
+          remotePort: '8080',
         },
         headers: {
-          host: '192.168.1.2:8080'
-        }
-      }
+          host: '192.168.1.2:8080',
+        },
+      };
       httpProxy.XHeaders(stubRequest, {}, { xfwd: true });
       expect(stubRequest.headers['x-forwarded-for']).to.be('192.168.1.2');
       expect(stubRequest.headers['x-forwarded-port']).to.be('8080');
@@ -102,14 +102,14 @@ describe('lib/http-proxy/passes/ws-incoming.js', function () {
       var stubRequest = {
         socket: {
           remoteAddress: '192.168.1.3',
-          remotePort: '8181'
+          remotePort: '8181',
         },
         connection: {
-          pair: true
+          pair: true,
         },
         headers: {
-          host: '192.168.1.3:8181'
-        }
+          host: '192.168.1.3:8181',
+        },
       };
       httpProxy.XHeaders(stubRequest, {}, { xfwd: true });
       expect(stubRequest.headers['x-forwarded-for']).to.be('192.168.1.3');

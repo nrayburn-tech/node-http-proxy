@@ -25,35 +25,49 @@
 */
 
 var https = require('https'),
-    http = require('http'),
-    util = require('util'),
-    fs   = require('fs'),
-    path = require('path'),
-    colors = require('colors'),
-    httpProxy = require('../../lib/http-proxy'),
-    fixturesDir = path.join(__dirname, '..', '..', 'test', 'fixtures'),
-    httpsOpts = {
-      key: fs.readFileSync(path.join(fixturesDir, 'agent2-key.pem'), 'utf8'),
-      cert: fs.readFileSync(path.join(fixturesDir, 'agent2-cert.pem'), 'utf8')
-    };
+  http = require('http'),
+  util = require('util'),
+  fs = require('fs'),
+  path = require('path'),
+  colors = require('colors'),
+  httpProxy = require('../../lib/http-proxy'),
+  fixturesDir = path.join(__dirname, '..', '..', 'test', 'fixtures'),
+  httpsOpts = {
+    key: fs.readFileSync(path.join(fixturesDir, 'agent2-key.pem'), 'utf8'),
+    cert: fs.readFileSync(path.join(fixturesDir, 'agent2-cert.pem'), 'utf8'),
+  };
 
 //
 // Create the target HTTPS server
 //
-https.createServer(httpsOpts, function (req, res) {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.write('hello https\n');
-  res.end();
-}).listen(9010);
+https
+  .createServer(httpsOpts, function (req, res) {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.write('hello https\n');
+    res.end();
+  })
+  .listen(9010);
 
 //
 // Create the proxy server listening on port 8010
 //
-httpProxy.createServer({
-  ssl: httpsOpts,
-  target: 'https://localhost:9010',
-  secure: false
-}).listen(8010);
+httpProxy
+  .createServer({
+    ssl: httpsOpts,
+    target: 'https://localhost:9010',
+    secure: false,
+  })
+  .listen(8010);
 
-util.puts('https proxy server'.blue + ' started '.green.bold + 'on port '.blue + '8010'.yellow);
-util.puts('https server '.blue + 'started '.green.bold + 'on port '.blue + '9010 '.yellow);
+util.puts(
+  'https proxy server'.blue +
+    ' started '.green.bold +
+    'on port '.blue +
+    '8010'.yellow,
+);
+util.puts(
+  'https server '.blue +
+    'started '.green.bold +
+    'on port '.blue +
+    '9010 '.yellow,
+);

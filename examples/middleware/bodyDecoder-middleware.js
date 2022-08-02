@@ -25,18 +25,17 @@
 */
 
 var http = require('http'),
-    connect = require('connect'),
-    request = require('request'),
-    colors = require('colors'),
-    util = require('util'),
-    queryString = require('querystring'),
-    bodyParser = require('body-parser'),
-    httpProxy = require('../../lib/http-proxy'),
-    proxy = httpProxy.createProxyServer({});
-
+  connect = require('connect'),
+  request = require('request'),
+  colors = require('colors'),
+  util = require('util'),
+  queryString = require('querystring'),
+  bodyParser = require('body-parser'),
+  httpProxy = require('../../lib/http-proxy'),
+  proxy = httpProxy.createProxyServer({});
 
 //restream parsed body before proxying
-proxy.on('proxyReq', function(proxyReq, req, res, options) {
+proxy.on('proxyReq', function (proxyReq, req, res, options) {
   if (!req.body || !Object.keys(req.body).length) {
     return;
   }
@@ -58,51 +57,61 @@ proxy.on('proxyReq', function(proxyReq, req, res, options) {
   }
 });
 
-
 //
 //  Basic Http Proxy Server
 //
 var app = connect()
-  .use(bodyParser.json())//json parser
-  .use(bodyParser.urlencoded())//urlencoded parser
-  .use(function(req, res){
+  .use(bodyParser.json()) //json parser
+  .use(bodyParser.urlencoded()) //urlencoded parser
+  .use(function (req, res) {
     // modify body here,
     // eg: req.body = {a: 1}.
-    console.log('proxy body:',req.body)
+    console.log('proxy body:', req.body);
     proxy.web(req, res, {
-      target: 'http://127.0.0.1:9013'
-    })
+      target: 'http://127.0.0.1:9013',
+    });
   });
 
-http.createServer(app).listen(8013, function(){
+http.createServer(app).listen(8013, function () {
   console.log('proxy linsten 8013');
 });
-
-
 
 //
 //  Target Http Server
 //
 var app1 = connect()
   .use(bodyParser.json())
-  .use(function(req, res){
-    console.log('app1:',req.body)
-    res.end('request successfully proxied to: ' + req.url + '\n' + JSON.stringify(req.headers, true, 2));
+  .use(function (req, res) {
+    console.log('app1:', req.body);
+    res.end(
+      'request successfully proxied to: ' +
+        req.url +
+        '\n' +
+        JSON.stringify(req.headers, true, 2),
+    );
   });
-http.createServer(app1).listen(9013, function(){
+http.createServer(app1).listen(9013, function () {
   //request to 8013 to proxy
-  request.post({//
-    url: 'http://127.0.0.1:8013',
-    json: {content: 123, type: "greeting from json request"}
-  },function(err, res,data){
-    console.log('return for json request:' ,err, data)
-  })
+  request.post(
+    {
+      //
+      url: 'http://127.0.0.1:8013',
+      json: { content: 123, type: 'greeting from json request' },
+    },
+    function (err, res, data) {
+      console.log('return for json request:', err, data);
+    },
+  );
 
   // application/x-www-form-urlencoded request
-  request.post({//
-    url: 'http://127.0.0.1:8013',
-    form: {content: 123, type: "greeting from urlencoded request"}
-  },function(err, res,data){
-    console.log('return for urlencoded request:' ,err, data)
-  })
+  request.post(
+    {
+      //
+      url: 'http://127.0.0.1:8013',
+      form: { content: 123, type: 'greeting from urlencoded request' },
+    },
+    function (err, res, data) {
+      console.log('return for urlencoded request:', err, data);
+    },
+  );
 });

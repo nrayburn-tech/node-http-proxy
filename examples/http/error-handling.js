@@ -25,14 +25,17 @@
 */
 
 var util = require('util'),
-    colors = require('colors'),
-    http = require('http'),
-    httpProxy = require('../../lib/http-proxy');
+  colors = require('colors'),
+  http = require('http'),
+  httpProxy = require('../../lib/http-proxy');
 
 //
 // HTTP Proxy Server
 //
-var proxy = httpProxy.createProxyServer({target:'http://localhost:9000', ws:true});
+var proxy = httpProxy.createProxyServer({
+  target: 'http://localhost:9000',
+  ws: true,
+});
 
 //
 // Example of error handling
@@ -45,7 +48,7 @@ function requestHandler(req, res) {
     // and handle it by your self
     // if (err) throw err;
     res.writeHead(502);
-    res.end("There was an error proxying your request");
+    res.end('There was an error proxying your request');
   });
 
   // In a websocket request case
@@ -55,9 +58,14 @@ function requestHandler(req, res) {
       // and handle it by your self
       // if (err) throw err;
       socket.close();
-    })
-  })
+    });
+  });
 }
 
 http.createServer(requestHandler).listen(8000);
-util.puts('http proxy server'.blue + ' started '.green.bold + 'on port '.blue + '8000'.yellow);
+util.puts(
+  'http proxy server'.blue +
+    ' started '.green.bold +
+    'on port '.blue +
+    '8000'.yellow,
+);

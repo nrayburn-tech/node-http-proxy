@@ -25,15 +25,14 @@
 */
 
 var util = require('util'),
-    http = require('http'),
-    colors = require('colors'),
-    httpProxy = require('../../lib/http-proxy');
+  http = require('http'),
+  colors = require('colors'),
+  httpProxy = require('../../lib/http-proxy');
 
 try {
   var io = require('socket.io'),
-      client = require('socket.io-client');
-}
-catch (ex) {
+    client = require('socket.io-client');
+} catch (ex) {
   console.error('Socket.io is required for this example:');
   console.error('npm ' + 'install'.green);
   process.exit(1);
@@ -57,7 +56,9 @@ server.sockets.on('connection', function (client) {
 //
 // Create a proxy server with node-http-proxy
 //
-httpProxy.createServer({ target: 'ws://localhost:9014', ws: true }).listen(8014);
+httpProxy
+  .createServer({ target: 'ws://localhost:9014', ws: true })
+  .listen(8014);
 
 //
 // Setup the socket.io client against our proxy

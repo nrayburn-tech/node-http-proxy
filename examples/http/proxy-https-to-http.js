@@ -25,36 +25,50 @@
 */
 
 var https = require('https'),
-    http  = require('http'),
-    util  = require('util'),
-    path  = require('path'),
-    fs    = require('fs'),
-    colors = require('colors'),
-    httpProxy = require('../../lib/http-proxy'),
-    fixturesDir = path.join(__dirname, '..', '..', 'test', 'fixtures');
+  http = require('http'),
+  util = require('util'),
+  path = require('path'),
+  fs = require('fs'),
+  colors = require('colors'),
+  httpProxy = require('../../lib/http-proxy'),
+  fixturesDir = path.join(__dirname, '..', '..', 'test', 'fixtures');
 
 //
 // Create the target HTTP server
 //
-http.createServer(function (req, res) {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.write('hello http over https\n');
-  res.end();
-}).listen(9009);
+http
+  .createServer(function (req, res) {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.write('hello http over https\n');
+    res.end();
+  })
+  .listen(9009);
 
 //
 // Create the HTTPS proxy server listening on port 8000
 //
-httpProxy.createServer({
-  target: {
-    host: 'localhost',
-    port: 9009
-  },
-  ssl: {
-    key: fs.readFileSync(path.join(fixturesDir, 'agent2-key.pem'), 'utf8'),
-    cert: fs.readFileSync(path.join(fixturesDir, 'agent2-cert.pem'), 'utf8')
-  }
-}).listen(8009);
+httpProxy
+  .createServer({
+    target: {
+      host: 'localhost',
+      port: 9009,
+    },
+    ssl: {
+      key: fs.readFileSync(path.join(fixturesDir, 'agent2-key.pem'), 'utf8'),
+      cert: fs.readFileSync(path.join(fixturesDir, 'agent2-cert.pem'), 'utf8'),
+    },
+  })
+  .listen(8009);
 
-util.puts('https proxy server'.blue + ' started '.green.bold + 'on port '.blue + '8009'.yellow);
-util.puts('http server '.blue + 'started '.green.bold + 'on port '.blue + '9009 '.yellow);
+util.puts(
+  'https proxy server'.blue +
+    ' started '.green.bold +
+    'on port '.blue +
+    '8009'.yellow,
+);
+util.puts(
+  'http server '.blue +
+    'started '.green.bold +
+    'on port '.blue +
+    '9009 '.yellow,
+);

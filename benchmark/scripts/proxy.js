@@ -1,5 +1,5 @@
 var http = require('http'),
-    httpProxy = require('../../');
+  httpProxy = require('../../');
 //
 // Create your proxy server
 //

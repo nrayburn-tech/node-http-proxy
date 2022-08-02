@@ -25,7 +25,7 @@
 */
 
 var http = require('http'),
-    httpProxy = require('../../lib/http-proxy');
+  httpProxy = require('../../lib/http-proxy');
 
 //
 // A simple round-robin load balancing strategy.
@@ -35,12 +35,12 @@ var http = require('http'),
 var addresses = [
   {
     host: 'ws1.0.0.0',
-    port: 80
+    port: 80,
   },
   {
     host: 'ws2.0.0.0',
-    port: 80
-  }
+    port: 80,
+  },
 ];
 
 //
@@ -49,7 +49,7 @@ var addresses = [
 
 var proxies = addresses.map(function (target) {
   return new httpProxy.createProxyServer({
-    target: target
+    target: target,
   });
 });
 

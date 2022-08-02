@@ -25,15 +25,14 @@
 */
 
 var util = require('util'),
-    http = require('http'),
-    colors = require('colors'),
-    httpProxy = require('../../lib/http-proxy');
+  http = require('http'),
+  colors = require('colors'),
+  httpProxy = require('../../lib/http-proxy');
 
 try {
   var io = require('socket.io'),
-      client = require('socket.io-client');
-}
-catch (ex) {
+    client = require('socket.io-client');
+} catch (ex) {
   console.error('Socket.io is required for this example:');
   console.error('npm ' + 'install'.green);
   process.exit(1);
@@ -60,8 +59,8 @@ server.sockets.on('connection', function (client) {
 var proxy = new httpProxy.createProxyServer({
   target: {
     host: 'localhost',
-    port: 9015
-  }
+    port: 9015,
+  },
 });
 var proxyServer = http.createServer(function (req, res) {
   proxy.web(req, res);
