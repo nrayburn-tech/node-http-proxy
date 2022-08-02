@@ -520,7 +520,7 @@ describe('lib/http-proxy.js', function () {
       server.on('listening', startSocketIo);
     });
 
-    it.skip('should pass all set-cookie headers to client', function (done) {
+    it('should pass all set-cookie headers to client', function (done) {
       var ports = { source: gen.port, proxy: gen.port };
       var proxy = httpProxy.createProxyServer({
           target: 'ws://127.0.0.1:' + ports.source,
@@ -528,8 +528,6 @@ describe('lib/http-proxy.js', function () {
         }),
         proxyServer = proxy.listen(ports.proxy),
         destiny = new ws.Server({ port: ports.source }, function () {
-          var key = new Buffer(Math.random().toString()).toString('base64');
-
           var requestOptions = {
             port: ports.proxy,
             host: '127.0.0.1',
@@ -538,7 +536,7 @@ describe('lib/http-proxy.js', function () {
               Upgrade: 'websocket',
               Host: 'ws://127.0.0.1',
               'Sec-WebSocket-Version': 13,
-              'Sec-WebSocket-Key': key,
+              'Sec-WebSocket-Key': 'dGhlIHNhbXBsZSBub25jZQ==',
             },
           };
 
