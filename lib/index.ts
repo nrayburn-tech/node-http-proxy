@@ -10,4 +10,4 @@
  *          Dante - The Divine Comedy (Canto III)
  */
 
-module.exports = require('./http-proxy');
+export = './http-proxy';
