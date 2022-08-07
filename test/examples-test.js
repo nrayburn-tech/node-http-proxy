@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 const rootDir = join(__dirname, '..'),
   examplesDir = join(rootDir, 'examples');
 
-describe('http-proxy examples', function () {
+describe.skip('http-proxy examples', function () {
   describe('Before testing examples', () => {
     it(
       'should have installed dependencies',
