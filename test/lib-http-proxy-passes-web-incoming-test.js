@@ -301,12 +301,12 @@ describe('#createProxyServer.web() using own http server', () => {
       proxy.web(req, res);
     }
 
-    proxyServer.listen('8084');
+    proxyServer.listen('8089');
 
     request(
       {
         hostname: '127.0.0.1',
-        port: '8084',
+        port: '8089',
         method: 'GET',
       },
       function () {},
