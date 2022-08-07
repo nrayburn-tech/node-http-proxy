@@ -24,29 +24,30 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
+const targetPort = getPort();
+const proxyPort = getPort();
 //
 // Basic Http Proxy Server
 //
 httpProxy
   .createServer({
-    target: 'http://localhost:9004',
+    target: 'http://localhost:' + targetPort,
   })
-  .listen(8004);
+  .listen(proxyPort);
 
 //
 // Target Http Server
 //
 // to check apparent problems with concurrent connections
-// make a server which only responds when there is a given nubmer on connections
+// make a server which only responds when there is a given number on connections
 //
 
-var connections = [],
-  go;
+const connections = [];
+let go;
 
 http
   .createServer(function (req, res) {
@@ -70,17 +71,7 @@ http
       }
     }
   })
-  .listen(9004);
+  .listen(targetPort);
 
-util.puts(
-  'http proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8004'.yellow,
-);
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9004 '.yellow,
-);
+console.log('http proxy server started on port ' + proxyPort);
+console.log('http server started on port ' + targetPort);

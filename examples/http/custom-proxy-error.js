@@ -24,22 +24,22 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
-  httpProxy = require('../../lib/http-proxy');
+const httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
+const targetPort = getPort();
+const proxyPort = getPort();
 //
 // Http Proxy Server with bad target
 //
-var proxy = httpProxy.createServer({
-  target: 'http://localhost:9005',
+const proxy = httpProxy.createServer({
+  target: 'http://localhost:' + targetPort,
 });
 
 //
 // Tell the proxy to listen on port 8000
 //
-proxy.listen(8005);
+proxy.listen(proxyPort);
 
 //
 // Listen for the `error` event on `proxy`.
@@ -51,10 +51,8 @@ proxy.on('error', function (err, req, res) {
   res.end('Something went wrong. And we are reporting a custom error message.');
 });
 
-util.puts(
-  'http proxy server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '8005 '.yellow +
-    'with custom error message'.magenta.underline,
+console.log(
+  'http proxy server started on port ' +
+    proxyPort +
+    ' with custom error message',
 );

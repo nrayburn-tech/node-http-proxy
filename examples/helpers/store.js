@@ -18,7 +18,7 @@
 //
 // TODO: cached map-reduce views and auto-magic sharding.
 //
-var Store = (module.exports = function Store() {
+const Store = (module.exports = function Store() {
   this.store = {};
 });
 
@@ -30,14 +30,14 @@ Store.prototype = {
     return (this.store[key] = value);
   },
   handler: function () {
-    var store = this;
+    const store = this;
     return function (req, res) {
       function send(obj, status) {
         res.writeHead(200 || status, { 'Content-Type': 'application/json' });
         res.write(JSON.stringify(obj) + '\n');
         res.end();
       }
-      var url = req.url.split('?').shift();
+      const url = req.url.split('?').shift();
       if (url === '/') {
         console.log('get index');
         return send(Object.keys(store.store));

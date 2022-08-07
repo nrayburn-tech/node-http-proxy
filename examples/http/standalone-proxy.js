@@ -24,24 +24,25 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
+const proxyPort = getPort();
+const targetPort = getPort();
 //
 // Http Server with proxyRequest Handler and Latency
 //
-var proxy = new httpProxy.createProxyServer();
+const proxy = new httpProxy.createProxyServer();
 http
   .createServer(function (req, res) {
     setTimeout(function () {
       proxy.web(req, res, {
-        target: 'http://localhost:9002',
+        target: 'http://localhost:' + targetPort,
       });
     }, 200);
   })
-  .listen(8002);
+  .listen(proxyPort);
 
 //
 // Target Http Server
@@ -57,19 +58,11 @@ http
     );
     res.end();
   })
-  .listen(9002);
+  .listen(targetPort);
 
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '8002 '.yellow +
-    'with proxy.web() handler'.cyan.underline +
-    ' and latency'.magenta,
+console.log(
+  'http server started on port ' +
+    proxyPort +
+    ' with proxy.web() handler and latency',
 );
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9002 '.yellow,
-);
+console.log('http server started on port ' + targetPort);

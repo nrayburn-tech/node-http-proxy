@@ -24,12 +24,13 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   connect = require('connect'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
+const proxyPort = getPort();
+const targetPort = getPort();
 //
 // Basic Connect App
 //
@@ -45,13 +46,13 @@ connect
       proxy.web(req, res);
     },
   )
-  .listen(8012);
+  .listen(proxyPort);
 
 //
 // Basic Http Proxy Server
 //
-var proxy = httpProxy.createProxyServer({
-  target: 'http://localhost:9012',
+const proxy = httpProxy.createProxyServer({
+  target: 'http://localhost:' + targetPort,
 });
 
 //
@@ -68,17 +69,7 @@ http
     );
     res.end();
   })
-  .listen(9012);
+  .listen(targetPort);
 
-util.puts(
-  'http proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8012'.yellow,
-);
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9012 '.yellow,
-);
+console.log('http proxy server started on port ' + proxyPort);
+console.log('http server started on port ' + targetPort);

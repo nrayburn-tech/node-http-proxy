@@ -9,10 +9,12 @@ module.exports = {
   env: {
     node: true,
     es2016: true,
-    mocha: true,
+    // Not using jest, but the test globals are jest-like so this works.
+    jest: true,
   },
   rules: {
     '@typescript-eslint/ban-ts-comment': ['off'],
+    '@typescript-eslint/no-empty-function': ['off'],
     'no-var': ['error'],
     'prefer-const': ['error'],
   },

@@ -21,37 +21,41 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var http = require('http'),
+const http = require('http'),
   net = require('net'),
   httpProxy = require('../../lib/http-proxy'),
-  url = require('url'),
-  util = require('util');
+  url = require('url');
+const { getPort } = require('../helpers/port');
 
-var proxy = httpProxy.createServer();
+const proxy = httpProxy.createServer();
 
-var server = http
+const server = http
   .createServer(function (req, res) {
-    util.puts('Receiving reverse proxy request for:' + req.url);
-    var parsedUrl = url.parse(req.url);
-    var target = parsedUrl.protocol + '//' + parsedUrl.hostname;
+    console.log('Receiving reverse proxy request for:' + req.url);
+    const parsedUrl = url.parse(req.url);
+    const target = parsedUrl.protocol + '//' + parsedUrl.hostname;
     proxy.web(req, res, { target: target, secure: false });
   })
-  .listen(8213);
+  .listen(getPort());
 
 server.on('connect', function (req, socket) {
-  util.puts('Receiving reverse proxy request for:' + req.url);
+  console.log('Receiving reverse proxy request for:' + req.url);
 
-  var serverUrl = url.parse('https://' + req.url);
+  const serverUrl = url.parse('https://' + req.url);
 
-  var srvSocket = net.connect(serverUrl.port, serverUrl.hostname, function () {
-    socket.write(
-      'HTTP/1.1 200 Connection Established\r\n' +
-        'Proxy-agent: Node-Proxy\r\n' +
-        '\r\n',
-    );
-    srvSocket.pipe(socket);
-    socket.pipe(srvSocket);
-  });
+  const srvSocket = net.connect(
+    serverUrl.port,
+    serverUrl.hostname,
+    function () {
+      socket.write(
+        'HTTP/1.1 200 Connection Established\r\n' +
+          'Proxy-agent: Node-Proxy\r\n' +
+          '\r\n',
+      );
+      srvSocket.pipe(socket);
+      socket.pipe(srvSocket);
+    },
+  );
 });
 
 // Test with:

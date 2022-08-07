@@ -24,12 +24,11 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
-var welcome = [
+const welcome = [
   '#    # ##### ##### #####        #####  #####   ####  #    # #   #',
   '#    #   #     #   #    #       #    # #    # #    #  #  #   # # ',
   '######   #     #   #    # ##### #    # #    # #    #   ##     #  ',
@@ -38,16 +37,19 @@ var welcome = [
   '#    #   #     #   #            #      #    #  ####  #    #   #  ',
 ].join('\n');
 
-util.puts(welcome.rainbow.bold);
+console.log(welcome);
+
+const targetPort = getPort();
+const proxyPort = getPort();
 
 //
 // Basic Http Proxy Server
 //
 httpProxy
   .createServer({
-    target: 'http://localhost:9003',
+    target: 'http://localhost:' + targetPort,
   })
-  .listen(8003);
+  .listen(proxyPort);
 
 //
 // Target Http Server
@@ -63,17 +65,7 @@ http
     );
     res.end();
   })
-  .listen(9003);
+  .listen(targetPort);
 
-util.puts(
-  'http proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8003'.yellow,
-);
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9003 '.yellow,
-);
+console.log('http proxy server started on port ' + proxyPort);
+console.log('http server started on port ' + targetPort);

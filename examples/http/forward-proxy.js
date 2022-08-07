@@ -24,10 +24,12 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
+
+const proxyPort = getPort();
+const targetPort = getPort();
 
 //
 // Setup proxy server with forwarding
@@ -35,18 +37,18 @@ var util = require('util'),
 httpProxy
   .createServer({
     forward: {
-      port: 9019,
+      port: targetPort,
       host: 'localhost',
     },
   })
-  .listen(8019);
+  .listen(proxyPort);
 
 //
 // Target Http Forwarding Server
 //
 http
   .createServer(function (req, res) {
-    util.puts('Receiving forward for: ' + req.url);
+    console.log('Receiving forward for: ' + req.url);
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.write(
       'request successfully forwarded to: ' +
@@ -56,18 +58,9 @@ http
     );
     res.end();
   })
-  .listen(9019);
+  .listen(targetPort);
 
-util.puts(
-  'http proxy server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '8019 '.yellow +
-    'with forward proxy'.magenta.underline,
+console.log(
+  'http proxy server started on port ' + proxyPort + ' with forward proxy',
 );
-util.puts(
-  'http forward server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9019 '.yellow,
-);
+console.log('http forward server started on port ' + targetPort);

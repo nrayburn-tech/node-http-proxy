@@ -24,14 +24,15 @@
 
 */
 
-var http = require('http'),
+const http = require('http'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 //
 // A simple round-robin load balancing strategy.
 //
 // First, list the servers you want to use in your rotation.
 //
-var addresses = [
+const addresses = [
   {
     host: 'ws1.0.0.0',
     port: 80,
@@ -41,14 +42,14 @@ var addresses = [
     port: 80,
   },
 ];
-var proxy = httpProxy.createServer();
+const proxy = httpProxy.createServer();
 
 http
   .createServer(function (req, res) {
     //
     // On each request, get the first location from the list...
     //
-    var target = { target: addresses.shift() };
+    const target = { target: addresses.shift() };
 
     //
     // ...then proxy to the server whose 'turn' it is...
@@ -61,6 +62,6 @@ http
     //
     addresses.push(target.target);
   })
-  .listen(8021);
+  .listen(getPort());
 
 // Rinse; repeat; enjoy.

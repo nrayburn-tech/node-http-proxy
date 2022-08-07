@@ -24,14 +24,11 @@
 
 */
 
-var https = require('https'),
-  http = require('http'),
-  util = require('util'),
-  path = require('path'),
-  fs = require('fs'),
-  colors = require('colors'),
+const https = require('https'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
+const proxyPort = getPort();
 //
 // Create a HTTP Proxy server with a HTTPS target
 //
@@ -43,11 +40,6 @@ httpProxy
       host: 'google.com',
     },
   })
-  .listen(8011);
+  .listen(proxyPort);
 
-util.puts(
-  'http proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8011'.yellow,
-);
+console.log('http proxy server started on port ' + proxyPort);

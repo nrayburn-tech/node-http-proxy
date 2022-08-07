@@ -24,26 +24,28 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
+const proxyPort = getPort();
+const targetPortOne = getPort();
+const targetPortTwo = getPort();
 //
 // Setup proxy server with forwarding
 //
 httpProxy
   .createServer({
     target: {
-      port: 9006,
+      port: targetPortOne,
       host: 'localhost',
     },
     forward: {
-      port: 9007,
+      port: targetPortTwo,
       host: 'localhost',
     },
   })
-  .listen(8006);
+  .listen(proxyPort);
 
 //
 // Target Http Server
@@ -59,14 +61,14 @@ http
     );
     res.end();
   })
-  .listen(9006);
+  .listen(targetPortOne);
 
 //
 // Target Http Forwarding Server
 //
 http
   .createServer(function (req, res) {
-    util.puts('Receiving forward for: ' + req.url);
+    console.log('Receiving forward for: ' + req.url);
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.write(
       'request successfully forwarded to: ' +
@@ -76,24 +78,10 @@ http
     );
     res.end();
   })
-  .listen(9007);
+  .listen(targetPortTwo);
 
-util.puts(
-  'http proxy server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '8006 '.yellow +
-    'with forward proxy'.magenta.underline,
+console.log(
+  'http proxy server started on port ' + proxyPort + ' with forward proxy',
 );
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9006 '.yellow,
-);
-util.puts(
-  'http forward server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9007 '.yellow,
-);
+console.log('http server started on port ' + targetPortOne);
+console.log('http forward server started on port ' + targetPortTwo);

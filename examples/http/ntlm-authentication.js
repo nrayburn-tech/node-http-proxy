@@ -1,7 +1,8 @@
-var httpProxy = require('../../lib/http-proxy');
-var Agent = require('agentkeepalive');
+const httpProxy = require('../../lib/http-proxy');
+const Agent = require('agentkeepalive');
+const { getPort } = require('../helpers/port');
 
-var agent = new Agent({
+const agent = new Agent({
   maxSockets: 100,
   keepAlive: true,
   maxFreeSockets: 10,
@@ -10,7 +11,7 @@ var agent = new Agent({
   keepAliveTimeout: 30000, // free socket keepalive for 30 seconds
 });
 
-var proxy = httpProxy.createProxy({
+const proxy = httpProxy.createProxy({
   target: 'http://whatever.com',
   agent: agent,
 });
@@ -20,7 +21,7 @@ var proxy = httpProxy.createProxy({
 // So that we handle the NLTM authentication response
 //
 proxy.on('proxyRes', function (proxyRes) {
-  var key = 'www-authenticate';
+  const key = 'www-authenticate';
   proxyRes.headers[key] =
     proxyRes.headers[key] && proxyRes.headers[key].split(',');
 });
@@ -29,4 +30,4 @@ require('http')
   .createServer(function (req, res) {
     proxy.web(req, res);
   })
-  .listen(3000);
+  .listen(getPort());

@@ -24,18 +24,19 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   connect = require('connect'),
   app = connect(),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
+const proxyPort = getPort();
+const targetPort = getPort();
 //
 // Basic Connect App
 //
 app.use(function (req, res, next) {
-  var _write = res.write;
+  const _write = res.write;
 
   res.write = function (data) {
     _write.call(res, data.toString().replace('Ruby', 'http-party'));
@@ -47,13 +48,13 @@ app.use(function (req, res) {
   proxy.web(req, res);
 });
 
-http.createServer(app).listen(8013);
+http.createServer(app).listen(proxyPort);
 
 //
 // Basic Http Proxy Server
 //
-var proxy = httpProxy.createProxyServer({
-  target: 'http://localhost:9013',
+const proxy = httpProxy.createProxyServer({
+  target: 'http://localhost:' + targetPort,
 });
 
 //
@@ -64,17 +65,7 @@ http
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('Hello, I love Ruby\n');
   })
-  .listen(9013);
+  .listen(targetPort);
 
-util.puts(
-  'http proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8013'.yellow,
-);
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9013 '.yellow,
-);
+console.log('http proxy server started on port ' + proxyPort);
+console.log('http server started on port ' + targetPort);

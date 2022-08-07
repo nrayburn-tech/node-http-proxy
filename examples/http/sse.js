@@ -24,28 +24,29 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   httpProxy = require('../../lib/http-proxy'),
   SSE = require('sse');
+const { getPort } = require('../helpers/port');
 
+const proxyPort = getPort();
+const targetPort = getPort();
 //
 // Basic Http Proxy Server
 //
-var proxy = new httpProxy.createProxyServer();
+const proxy = new httpProxy.createProxyServer();
 http
   .createServer(function (req, res) {
     proxy.web(req, res, {
-      target: 'http://localhost:9003',
+      target: 'http://localhost:' + targetPort,
     });
   })
-  .listen(8003);
+  .listen(proxyPort);
 
 //
 // Target Http Server
 //
-var server = http.createServer(function (req, res) {
+const server = http.createServer(function (req, res) {
   res.writeHead(200, { 'Content-Type': 'text/html' });
   res.write(
     'request successfully proxied to: ' +
@@ -60,25 +61,15 @@ var server = http.createServer(function (req, res) {
 // Use SSE
 //
 
-var sse = new SSE(server, { path: '/' });
+const sse = new SSE(server, { path: '/' });
 sse.on('connection', function (client) {
-  var count = 0;
+  let count = 0;
   setInterval(function () {
     client.send('message #' + count++);
   }, 1500);
 });
 
-server.listen(9003);
+server.listen(targetPort);
 
-util.puts(
-  'http proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8003'.yellow,
-);
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9003 '.yellow,
-);
+console.log('http proxy server started on port ' + proxyPort);
+console.log('http server started on port ' + targetPort);

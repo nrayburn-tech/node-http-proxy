@@ -24,14 +24,15 @@
 
 */
 
-var https = require('https'),
-  http = require('http'),
-  util = require('util'),
+const http = require('http'),
   path = require('path'),
   fs = require('fs'),
-  colors = require('colors'),
   httpProxy = require('../../lib/http-proxy'),
   fixturesDir = path.join(__dirname, '..', '..', 'test', 'fixtures');
+const { getPort } = require('../helpers/port');
+
+const proxyPort = getPort();
+const targetPort = getPort();
 
 //
 // Create the target HTTP server
@@ -42,7 +43,7 @@ http
     res.write('hello http over https\n');
     res.end();
   })
-  .listen(9009);
+  .listen(targetPort);
 
 //
 // Create the HTTPS proxy server listening on port 8000
@@ -51,24 +52,14 @@ httpProxy
   .createServer({
     target: {
       host: 'localhost',
-      port: 9009,
+      port: targetPort,
     },
     ssl: {
       key: fs.readFileSync(path.join(fixturesDir, 'agent2-key.pem'), 'utf8'),
       cert: fs.readFileSync(path.join(fixturesDir, 'agent2-cert.pem'), 'utf8'),
     },
   })
-  .listen(8009);
+  .listen(proxyPort);
 
-util.puts(
-  'https proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8009'.yellow,
-);
-util.puts(
-  'http server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9009 '.yellow,
-);
+console.log('https proxy server started on port ' + proxyPort);
+console.log('http server started on port ' + targetPort);

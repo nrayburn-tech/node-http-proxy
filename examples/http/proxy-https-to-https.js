@@ -24,19 +24,19 @@
 
 */
 
-var https = require('https'),
-  http = require('http'),
-  util = require('util'),
+const https = require('https'),
   fs = require('fs'),
   path = require('path'),
-  colors = require('colors'),
   httpProxy = require('../../lib/http-proxy'),
   fixturesDir = path.join(__dirname, '..', '..', 'test', 'fixtures'),
   httpsOpts = {
     key: fs.readFileSync(path.join(fixturesDir, 'agent2-key.pem'), 'utf8'),
     cert: fs.readFileSync(path.join(fixturesDir, 'agent2-cert.pem'), 'utf8'),
   };
+const { getPort } = require('../helpers/port');
 
+const proxyPort = getPort();
+const targetPort = getPort();
 //
 // Create the target HTTPS server
 //
@@ -46,7 +46,7 @@ https
     res.write('hello https\n');
     res.end();
   })
-  .listen(9010);
+  .listen(targetPort);
 
 //
 // Create the proxy server listening on port 8010
@@ -54,20 +54,10 @@ https
 httpProxy
   .createServer({
     ssl: httpsOpts,
-    target: 'https://localhost:9010',
+    target: 'https://localhost:' + targetPort,
     secure: false,
   })
-  .listen(8010);
+  .listen(proxyPort);
 
-util.puts(
-  'https proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8010'.yellow,
-);
-util.puts(
-  'https server '.blue +
-    'started '.green.bold +
-    'on port '.blue +
-    '9010 '.yellow,
-);
+console.log('https proxy server started on port ' + proxyPort);
+console.log('https server started on port ' + targetPort);

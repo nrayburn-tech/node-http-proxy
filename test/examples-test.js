@@ -4,83 +4,57 @@
   Copyright (c) 2013 - 2016 Charlie Robbins, Jarrett Cruger & the Contributors.
 
 */
-var path = require('path'),
-  fs = require('fs'),
-  spawn = require('child_process').spawn,
-  expect = require('expect.js'),
-  async = require('async');
+import { join } from 'path';
+import { readdir } from 'fs/promises';
+import { spawn } from 'child_process';
+import { describe, expect, it } from 'vitest';
 
-var rootDir = path.join(__dirname, '..'),
-  examplesDir = path.join(rootDir, 'examples');
+const rootDir = join(__dirname, '..'),
+  examplesDir = join(rootDir, 'examples');
 
-describe.skip('http-proxy examples', function () {
-  describe('Before testing examples', function () {
-    // Set a timeout to avoid this error
-    this.timeout(30 * 1000);
-    it('should have installed dependencies', function (done) {
-      async.waterfall(
-        [
-          //
-          // 1. Read files in examples dir
-          //
-          async.apply(fs.readdir, examplesDir),
-          //
-          // 2. If node_modules exists, continue. Otherwise
-          // exec `npm` to install them
-          //
-          function checkNodeModules(files, next) {
-            if (files.indexOf('node_modules') !== -1) {
-              return next();
-            }
-
-            console.log(
-              'Warning: installing dependencies, this operation could take a while',
-            );
-
-            var child = spawn('npm', ['install', '-f'], {
+describe('http-proxy examples', function () {
+  describe('Before testing examples', () => {
+    it(
+      'should have installed dependencies',
+      async () => {
+        let files = await readdir(examplesDir);
+        if (files.indexOf('node_modules') === -1) {
+          await new Promise((resolve, reject) => {
+            const child = spawn('npm', ['install', '-f', '--save=false'], {
               cwd: examplesDir,
             });
-
             child.on('exit', function (code) {
               return code
-                ? next(new Error('npm install exited with non-zero exit code'))
-                : next();
+                ? reject(
+                    new Error('npm install exited with non-zero exit code'),
+                  )
+                : resolve();
             });
-          },
-          //
-          // 3. Read files in examples dir again to ensure the install
-          // worked as expected.
-          //
-          async.apply(fs.readdir, examplesDir),
-        ],
-        done,
-      );
-    });
+          });
+        }
+        files = await readdir(examplesDir);
+        if (files.indexOf('node_modules') === -1) {
+          throw new Error('node_modules does not exist after install');
+        }
+      },
+      30 * 1000,
+    );
   });
 
-  describe('Requiring all the examples', function () {
-    it('should have no errors', function (done) {
-      async.each(
-        ['balancer', 'http', 'middleware', 'websocket'],
-        function (dir, cb) {
-          var name = 'examples/' + dir,
-            files = fs.readdirSync(path.join(rootDir, 'examples', dir));
-
-          async.each(
-            files,
-            function (file, callback) {
-              var example;
-              expect(function () {
-                example = require(path.join(examplesDir, dir, file));
-              }).to.not.throwException();
-              expect(example).to.be.an('object');
-              callback();
-            },
-            cb,
-          );
-        },
-        done,
-      );
+  describe('Requiring all the examples', () => {
+    it('should have no errors', async () => {
+      for (const dir of ['balancer', 'http', 'middleware', 'websocket']) {
+        const files = await readdir(join(rootDir, 'examples', dir));
+        files.forEach((file) => {
+          let example;
+          expect(
+            () => (example = require(join(examplesDir, dir, file))),
+          ).not.toThrow();
+          expect(typeof example).toBe('object');
+          expect(example).not.toBeNull();
+          expect(example).not.toBeUndefined();
+        });
+      }
     });
   });
 });

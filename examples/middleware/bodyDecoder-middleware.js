@@ -24,15 +24,14 @@
 
 */
 
-var http = require('http'),
+const http = require('http'),
   connect = require('connect'),
   request = require('request'),
-  colors = require('colors'),
-  util = require('util'),
   queryString = require('querystring'),
   bodyParser = require('body-parser'),
   httpProxy = require('../../lib/http-proxy'),
   proxy = httpProxy.createProxyServer({});
+const { getPort } = require('../helpers/port');
 
 //restream parsed body before proxying
 proxy.on('proxyReq', function (proxyReq, req, res, options) {
@@ -40,8 +39,8 @@ proxy.on('proxyReq', function (proxyReq, req, res, options) {
     return;
   }
 
-  var contentType = proxyReq.getHeader('Content-Type');
-  var bodyData;
+  const contentType = proxyReq.getHeader('Content-Type');
+  let bodyData;
 
   if (contentType === 'application/json') {
     bodyData = JSON.stringify(req.body);
@@ -57,10 +56,12 @@ proxy.on('proxyReq', function (proxyReq, req, res, options) {
   }
 });
 
+const proxyPort = getPort();
+const targetPort = getPort();
 //
 //  Basic Http Proxy Server
 //
-var app = connect()
+const app = connect()
   .use(bodyParser.json()) //json parser
   .use(bodyParser.urlencoded()) //urlencoded parser
   .use(function (req, res) {
@@ -68,18 +69,16 @@ var app = connect()
     // eg: req.body = {a: 1}.
     console.log('proxy body:', req.body);
     proxy.web(req, res, {
-      target: 'http://127.0.0.1:9013',
+      target: 'http://127.0.0.1:' + targetPort,
     });
   });
 
-http.createServer(app).listen(8013, function () {
-  console.log('proxy linsten 8013');
-});
+http.createServer(app).listen(proxyPort);
 
 //
 //  Target Http Server
 //
-var app1 = connect()
+const app1 = connect()
   .use(bodyParser.json())
   .use(function (req, res) {
     console.log('app1:', req.body);
@@ -90,12 +89,12 @@ var app1 = connect()
         JSON.stringify(req.headers, true, 2),
     );
   });
-http.createServer(app1).listen(9013, function () {
+http.createServer(app1).listen(targetPort, function () {
   //request to 8013 to proxy
   request.post(
     {
       //
-      url: 'http://127.0.0.1:8013',
+      url: 'http://127.0.0.1:' + proxyPort,
       json: { content: 123, type: 'greeting from json request' },
     },
     function (err, res, data) {
@@ -107,7 +106,7 @@ http.createServer(app1).listen(9013, function () {
   request.post(
     {
       //
-      url: 'http://127.0.0.1:8013',
+      url: 'http://127.0.0.1:' + proxyPort,
       form: { content: 123, type: 'greeting from urlencoded request' },
     },
     function (err, res, data) {

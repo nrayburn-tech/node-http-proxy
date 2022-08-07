@@ -24,16 +24,17 @@
 
 */
 
-var util = require('util'),
-  colors = require('colors'),
-  http = require('http'),
+const http = require('http'),
   httpProxy = require('../../lib/http-proxy');
+const { getPort } = require('../helpers/port');
 
+const proxyPort = getPort();
+const targetPort = getPort();
 //
 // HTTP Proxy Server
 //
-var proxy = httpProxy.createProxyServer({
-  target: 'http://localhost:9000',
+const proxy = httpProxy.createProxyServer({
+  target: 'http://localhost:' + targetPort,
   ws: true,
 });
 
@@ -62,10 +63,5 @@ function requestHandler(req, res) {
   });
 }
 
-http.createServer(requestHandler).listen(8000);
-util.puts(
-  'http proxy server'.blue +
-    ' started '.green.bold +
-    'on port '.blue +
-    '8000'.yellow,
-);
+http.createServer(requestHandler).listen(proxyPort);
+console.log('http proxy server started on port ' + proxyPort);
