@@ -4,7 +4,6 @@ export default defineConfig({
   test: {
     globals: false,
     include: ['**/test/*-test.js'],
-    threads: false,
     testTimeout: 2500,
   },
 });
