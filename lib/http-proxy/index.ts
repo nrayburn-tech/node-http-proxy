@@ -11,17 +11,11 @@ import web from './passes/web-incoming';
 import ws from './passes/ws-incoming';
 import { ServerOptions } from '../types';
 
-interface PassInterface {
-  (this: ProxyServerNew, req: IncomingMessage, res: ServerResponse):
-    | boolean
-    | void;
-  (this: ProxyServerNew, req: IncomingMessage, res: Duplex, head: Buffer):
-    | boolean
-    | void;
+export interface PassInterface {
   (
     this: ProxyServerNew,
     req: IncomingMessage,
-    res: ServerResponse,
+    res: ServerResponse | Duplex,
     options: ServerOptions,
     head: Buffer,
     server: ProxyServerNew,
@@ -31,7 +25,7 @@ interface PassInterface {
       res: ServerResponse,
       url: ServerOptions['target'],
     ) => void,
-  ): boolean | void;
+  ): boolean | unknown;
 }
 
 /**
@@ -106,9 +100,17 @@ function createRightProxy(type: 'web' | 'ws') {
          * refer to the connection socket
          * pass(req, socket, options, head)
          */
-        // TODO: Figure out the typing here.
-        // @ts-ignore
-        if (passes[i](req, resOrSocket, requestOptions, head, this, cbl)) {
+        if (
+          passes[i].call(
+            this,
+            req,
+            resOrSocket,
+            requestOptions,
+            head,
+            this,
+            cbl,
+          )
+        ) {
           // passes can return a truthy value to halt the loop
           break;
         }
@@ -119,8 +121,8 @@ function createRightProxy(type: 'web' | 'ws') {
 
 export class ProxyServerNew extends EE3 {
   options: ServerOptions;
-  web: PassInterface;
-  ws: PassInterface;
+  web: (req: IncomingMessage, res: ServerResponse) => void;
+  ws: (req: IncomingMessage, socket: Duplex, head: Buffer) => void;
   webPasses: PassInterface[];
   wsPasses: PassInterface[];
 
@@ -135,15 +137,8 @@ export class ProxyServerNew extends EE3 {
     this.ws = createRightProxy('ws')(options);
     this.options = options;
 
-    this.webPasses = Object.keys(web).map(function (pass) {
-      // TODO: Figure out the typing here.
-      return web[pass as keyof typeof web] as PassInterface;
-    });
-
-    this.wsPasses = Object.keys(ws).map(function (pass) {
-      // TODO: Figure out the typing here.
-      return ws[pass as keyof typeof ws] as PassInterface;
-    });
+    this.webPasses = [web.deleteLength, web.timeout, web.XHeaders, web.stream];
+    this.wsPasses = [ws.checkMethodAndHeader, ws.XHeaders, ws.stream];
 
     this.on('error', this.onError, this);
   }
