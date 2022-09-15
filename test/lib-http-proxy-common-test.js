@@ -2,7 +2,7 @@ import { setupOutgoing, setupSocket } from '../lib/http-proxy/common';
 import { parse } from 'url';
 import { describe, expect, it } from 'vitest';
 
-describe('lib/http-proxy/common.js', () => {
+describe('lib/http-proxy/common.ts', () => {
   describe('#setupOutgoing', () => {
     it('should setup the correct headers', () => {
       const outgoing = {};

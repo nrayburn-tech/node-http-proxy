@@ -1,7 +1,6 @@
 import type { WebOutgoingPass } from '../index';
-
-const url = require('url'),
-  common = require('../common');
+import url from 'url';
+import common from '../common';
 
 const redirectRegex = /^201|30(1|2|7|8)$/;
 

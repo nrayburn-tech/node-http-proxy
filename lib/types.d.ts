@@ -190,6 +190,8 @@ declare namespace Server {
       | undefined;
     /** object with extra headers to be added to target requests. */
     headers?: { [header: string]: string } | undefined;
+    /** http method to use when forwarding request */
+    method?: string;
     /** Timeout (in milliseconds) when proxy receives no response from target. Default: 120000 (2 minutes) */
     proxyTimeout?: number | undefined;
     /** Timeout (in milliseconds) for incoming requests */

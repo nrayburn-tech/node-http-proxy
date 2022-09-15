@@ -1,15 +1,17 @@
-const common = exports,
-  url = require('url'),
-  extend = require('util')._extend,
-  required = require('requires-port');
+import * as url from 'url';
+import { default as required } from 'requires-port';
+import { Socket } from 'net';
+import { IncomingMessage } from 'http';
+import { RequestOptions } from 'https';
+import { ServerOptions } from '../types';
 
-const upgradeHeader = /(^|,)\s*upgrade\s*($|,)/i,
-  isSSL = /^https|wss/;
+const upgradeHeader = /(^|,)\s*upgrade\s*($|,)/i;
 
 /**
  * Simple Regex for testing if protocol is https
  */
-common.isSSL = isSSL;
+export const isSSL = /^https|wss/;
+
 /**
  * Copies the right headers from `options` and `req` to
  * `outgoing` which is then used to fire the proxied
@@ -20,47 +22,55 @@ common.isSSL = isSSL;
  *    common.setupOutgoing(outgoing, options, req)
  *    // => { host: ..., hostname: ...}
  *
- * @param {Object} Outgoing Base object to be filled with required properties
- * @param {Object} Options Config object passed to the proxy
- * @param {ClientRequest} Req Request Object
- * @param {String} Forward String to select forward or target
+ * @param outgoing Base object to be filled with required properties
+ * @param options Config object passed to the proxy
+ * @param req Request Object
+ * @param forward String to select forward or target
  *
  * @return {Object} Outgoing Object with all required properties set
  *
- * @api private
+ * @internal
  */
 
-common.setupOutgoing = function (outgoing, options, req, forward) {
+export function setupOutgoing(
+  outgoing: RequestOptions,
+  options: ServerOptions,
+  req: IncomingMessage,
+  forward?: 'forward' | 'target',
+) {
   outgoing.port =
     options[forward || 'target'].port ||
     (isSSL.test(options[forward || 'target'].protocol) ? 443 : 80);
 
-  [
-    'host',
-    'hostname',
-    'socketPath',
-    'pfx',
-    'key',
-    'passphrase',
-    'cert',
-    'ca',
-    'ciphers',
-    'secureProtocol',
-  ].forEach(function (e) {
+  (
+    [
+      'host',
+      'hostname',
+      'socketPath',
+      'pfx',
+      'key',
+      'passphrase',
+      'cert',
+      'ca',
+      'ciphers',
+      'secureProtocol',
+    ] as const
+  ).forEach(function (e) {
     outgoing[e] = options[forward || 'target'][e];
   });
 
   outgoing.method = options.method || req.method;
-  outgoing.headers = extend({}, req.headers);
+  outgoing.headers = { ...req.headers };
 
   if (options.headers) {
-    extend(outgoing.headers, options.headers);
+    outgoing.headers = { ...outgoing.headers, ...options.headers };
   }
 
   if (options.auth) {
     outgoing.auth = options.auth;
   }
 
+  // TODO: This should probably be options.ssl.ca
   if (options.ca) {
     outgoing.ca = options.ca;
   }
@@ -104,17 +114,20 @@ common.setupOutgoing = function (outgoing, options, req, forward) {
   //
   outgoingPath = !options.ignorePath ? outgoingPath : '';
 
-  outgoing.path = common.urlJoin(targetPath, outgoingPath);
+  outgoing.path = urlJoin(targetPath, outgoingPath);
 
   if (options.changeOrigin) {
+    if (!outgoing.headers) {
+      outgoing.headers = {};
+    }
     outgoing.headers.host =
       required(outgoing.port, options[forward || 'target'].protocol) &&
       !hasPort(outgoing.host)
         ? outgoing.host + ':' + outgoing.port
-        : outgoing.host;
+        : outgoing.host || undefined;
   }
   return outgoing;
-};
+}
 
 /**
  * Set the proper configuration for sockets,
@@ -126,59 +139,57 @@ common.setupOutgoing = function (outgoing, options, req, forward) {
  *    common.setupSocket(socket)
  *    // => Socket
  *
- * @param {Socket} Socket instance to setup
+ * @return Return the configured socket.
  *
- * @return {Socket} Return the configured socket.
- *
- * @api private
+ * @internal
  */
 
-common.setupSocket = function (socket) {
+export function setupSocket(socket: Socket) {
   socket.setTimeout(0);
   socket.setNoDelay(true);
 
   socket.setKeepAlive(true, 0);
 
   return socket;
-};
+}
 
 /**
  * Get the port number from the host. Or guess it based on the connection type.
  *
- * @param {Request} req Incoming HTTP request.
+ * @param req Incoming HTTP request.
  *
- * @return {String} The port number.
+ * @return The port number.
  *
- * @api private
+ * @internal
  */
-common.getPort = function (req) {
+export function getPort(req: IncomingMessage) {
   const res = req.headers.host ? req.headers.host.match(/:(\d+)/) : '';
 
-  return res ? res[1] : common.hasEncryptedConnection(req) ? '443' : '80';
-};
+  return res ? res[1] : hasEncryptedConnection(req) ? '443' : '80';
+}
 
 /**
  * Check if the request has an encrypted connection.
  *
- * @param {Request} req Incoming HTTP request.
+ * @param req Incoming HTTP request.
  *
- * @return {Boolean} Whether the connection is encrypted or not.
+ * @return Whether the connection is encrypted or not.
  *
- * @api private
+ * @internal
  */
-common.hasEncryptedConnection = function (req) {
+export function hasEncryptedConnection(req: IncomingMessage) {
   return Boolean(req.connection.encrypted || req.connection.pair);
-};
+}
 
 /**
  * OS-agnostic join (doesn't break on URLs like path.join does on Windows)>
  *
  * @return {String} The generated path.
  *
- * @api private
+ * @internal
  */
 
-common.urlJoin = function () {
+export function urlJoin() {
   //
   // We do not want to mess with the query string. All we want to touch is the path.
   //
@@ -209,26 +220,27 @@ common.urlJoin = function () {
   retSegs.push.apply(retSegs, lastSegs);
 
   return retSegs.join('?');
-};
+}
 
 /**
  * Rewrites or removes the domain of a cookie header
  *
- * @param {String|Array} header
- * @param {Object} config, mapping of domain to rewritten domain.
+ * @param header
+ * @param config, mapping of domain to rewritten domain.
  *                 '*' key to match any domain, null value to remove the domain.
+ * @param property
  *
- * @api private
+ * @internal
  */
-common.rewriteCookieProperty = function rewriteCookieProperty(
-  header,
-  config,
-  property,
-) {
+export function rewriteCookieProperty(
+  header: string | string[],
+  config: Record<string, string>,
+  property: string,
+): string | string[] {
   if (Array.isArray(header)) {
     return header.map(function (headerElement) {
       return rewriteCookieProperty(headerElement, config, property);
-    });
+    }) as string[];
   }
   return header.replace(
     new RegExp('(;\\s*' + property + '=)([^;]+)', 'i'),
@@ -251,15 +263,24 @@ common.rewriteCookieProperty = function rewriteCookieProperty(
       }
     },
   );
-};
+}
 
 /**
  * Check the host and see if it potentially has a port in it (keep it simple)
  *
- * @returns {Boolean} Whether we have one or not
- *
- * @api private
+ * @internal
  */
-function hasPort(host) {
+export function hasPort(host: string) {
   return !!~host.indexOf(':');
 }
+
+export default {
+  isSSL,
+  setupOutgoing,
+  setupSocket,
+  getPort,
+  hasEncryptedConnection,
+  urlJoin,
+  rewriteCookieProperty,
+  hasPort,
+};

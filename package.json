@@ -19,6 +19,7 @@
   "devDependencies": {
     "@types/follow-redirects": "^1.14.1",
     "@types/node": "^18.0.0",
+    "@types/requires-port": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "async": "^3.0.0",
