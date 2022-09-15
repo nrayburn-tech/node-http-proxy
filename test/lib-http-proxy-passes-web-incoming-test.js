@@ -7,7 +7,7 @@ import { createServer, get, request } from 'http';
 import { describe, expect, it } from 'vitest';
 import { waitForClosed } from './util';
 
-describe('lib/http-proxy/passes/web.js', () => {
+describe('lib/http-proxy/passes/web-incoming.ts', () => {
   describe('#deleteLength', () => {
     it('should change `content-length` for DELETE requests', () => {
       const stubRequest = {

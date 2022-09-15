@@ -1,9 +1,11 @@
-import webOutgoing from './web-outgoing';
-
-const httpNative = require('http'),
-  httpsNative = require('https'),
-  common = require('../common'),
-  followRedirects = require('follow-redirects');
+import * as httpNative from 'http';
+import { IncomingMessage } from 'http';
+import * as httpsNative from 'https';
+import * as followRedirects from 'follow-redirects';
+import * as webOutgoing from './web-outgoing';
+import * as common from '../common';
+import type { WebIncomingPass } from '../index';
+import type { ServerOptions } from '../../types';
 
 const nativeAgents = { http: httpNative, https: httpsNative };
 
@@ -18,10 +20,9 @@ const nativeAgents = { http: httpNative, https: httpsNative };
 /**
  * Sets `content-length` to '0' if request is of DELETE type.
  *
- * @type {WebIncomingPass}
  * @internal
  */
-const deleteLength = (req) => {
+export const deleteLength: WebIncomingPass = (req) => {
   if (
     (req.method === 'DELETE' || req.method === 'OPTIONS') &&
     !req.headers['content-length']
@@ -34,10 +35,9 @@ const deleteLength = (req) => {
 /**
  * Sets timeout in request socket if it was specified in options.
  *
- * @type {WebIncomingPass}
  * @internal
  */
-const timeout = (req, res, options) => {
+export const timeout: WebIncomingPass = (req, res, options) => {
   if (options.timeout) {
     req.socket.setTimeout(options.timeout);
   }
@@ -46,20 +46,21 @@ const timeout = (req, res, options) => {
 /**
  * Sets `x-forwarded-*` headers if specified in config.
  *
- * @type {WebIncomingPass}
  * @internal
  */
-const XHeaders = (req, res, options) => {
+export const XHeaders: WebIncomingPass = (req, res, options) => {
   if (!options.xfwd) return;
 
-  const encrypted = req.isSpdy || common.hasEncryptedConnection(req);
+  const encrypted =
+    (req as IncomingMessage & { isSpdy?: boolean }).isSpdy ||
+    common.hasEncryptedConnection(req);
   const values = {
     for: req.connection.remoteAddress || req.socket.remoteAddress,
     port: common.getPort(req),
     proto: encrypted ? 'https' : 'http',
   };
 
-  ['for', 'port', 'proto'].forEach(function (header) {
+  (['for', 'port', 'proto'] as const).forEach(function (header) {
     req.headers['x-forwarded-' + header] =
       (req.headers['x-forwarded-' + header] || '') +
       (req.headers['x-forwarded-' + header] ? ',' : '') +
@@ -75,10 +76,9 @@ const XHeaders = (req, res, options) => {
  * a ForwardStream, same happens for ProxyStream. The request
  * just dies otherwise.
  *
- * @type {WebIncomingPass}
  * @internal
  */
-const stream = (req, res, options, server, clb) => {
+export const stream: WebIncomingPass = (req, res, options, server, clb) => {
   // And we begin!
   server.emit('start', req, res, options.target || options.forward);
 
@@ -88,7 +88,7 @@ const stream = (req, res, options, server, clb) => {
 
   if (options.forward) {
     // If forward enable, so just pipe the request
-    const forwardReq = (
+    const forwardReq: httpNative.ClientRequest = (
       options.forward.protocol === 'https:' ? https : http
     ).request(common.setupOutgoing(options.ssl || {}, options, req, 'forward'));
 
@@ -104,8 +104,8 @@ const stream = (req, res, options, server, clb) => {
     }
   }
 
-  // Request initalization
-  const proxyReq = (
+  // Request initialization
+  const proxyReq: httpNative.ClientRequest = (
     options.target.protocol === 'https:' ? https : http
   ).request(common.setupOutgoing(options.ssl || {}, options, req));
 
@@ -144,9 +144,16 @@ const stream = (req, res, options, server, clb) => {
   req.on('error', proxyError);
   proxyReq.on('error', proxyError);
 
-  function createErrorHandler(proxyReq, url) {
-    return function proxyError(err) {
-      if (req.socket.destroyed && err.code === 'ECONNRESET') {
+  function createErrorHandler(
+    proxyReq: httpNative.ClientRequest,
+    url: ServerOptions['target'],
+  ) {
+    return function proxyError(err: Error) {
+      if (
+        req.socket.destroyed &&
+        'code' in err &&
+        (err as Error & { code: string }).code === 'ECONNRESET'
+      ) {
         server.emit('econnreset', err, req, res, url);
         proxyReq.destroy();
         return;
@@ -176,7 +183,9 @@ const stream = (req, res, options, server, clb) => {
     ];
     if (!res.headersSent && !options.selfHandleResponse) {
       for (let i = 0; i < outgoingPasses.length; i++) {
-        if (outgoingPasses[i].call(this, req, res, proxyRes, options)) {
+        if (
+          outgoingPasses[i].call(server, req, res, proxyRes, options, server)
+        ) {
           break;
         }
       }
@@ -195,7 +204,7 @@ const stream = (req, res, options, server, clb) => {
   });
 };
 
-module.exports = {
+export default {
   deleteLength,
   timeout,
   XHeaders,
