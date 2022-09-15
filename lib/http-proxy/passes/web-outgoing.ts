@@ -63,7 +63,7 @@ export const setRedirectHostRewrite: WebOutgoingPass = (
     if (options.hostRewrite) {
       u.host = options.hostRewrite;
     } else if (options.autoRewrite) {
-      u.host = req.headers['host'];
+      u.host = req.headers['host'] || null;
     }
     if (options.protocolRewrite) {
       u.protocol = options.protocolRewrite;
