@@ -1,3 +1,5 @@
+import type { WebOutgoingPass } from '../index';
+
 const url = require('url'),
   common = require('../common');
 
@@ -14,10 +16,9 @@ const redirectRegex = /^201|30(1|2|7|8)$/;
 /**
  * If is an HTTP 1.0 request, remove chunk headers
  *
- * @type {WebOutgoingPass}
  * @internal
  */
-const removeChunked = (req, res, proxyRes) => {
+export const removeChunked: WebOutgoingPass = (req, res, proxyRes) => {
   if (req.httpVersion === '1.0') {
     delete proxyRes.headers['transfer-encoding'];
   }
@@ -27,10 +28,9 @@ const removeChunked = (req, res, proxyRes) => {
  * If is a HTTP 1.0 request, set the correct connection header
  * or if connection header not present, then use `keep-alive`
  *
- * @type {WebOutgoingPass}
  * @internal
  */
-const setConnection = (req, res, proxyRes) => {
+export const setConnection: WebOutgoingPass = (req, res, proxyRes) => {
   if (req.httpVersion === '1.0') {
     proxyRes.headers.connection = req.headers.connection || 'close';
   } else if (req.httpVersion !== '2.0' && !proxyRes.headers.connection) {
@@ -39,14 +39,19 @@ const setConnection = (req, res, proxyRes) => {
 };
 
 /**
- * @type {WebOutgoingPass}
  * @internal
  */
-const setRedirectHostRewrite = (req, res, proxyRes, options) => {
+export const setRedirectHostRewrite: WebOutgoingPass = (
+  req,
+  res,
+  proxyRes,
+  options,
+) => {
   if (
     (options.hostRewrite || options.autoRewrite || options.protocolRewrite) &&
     proxyRes.headers['location'] &&
-    redirectRegex.test(proxyRes.statusCode)
+    proxyRes.statusCode &&
+    redirectRegex.test(String(proxyRes.statusCode))
   ) {
     const target = url.parse(options.target);
     const u = url.parse(proxyRes.headers['location']);
@@ -73,15 +78,14 @@ const setRedirectHostRewrite = (req, res, proxyRes, options) => {
  * Copy headers from proxyResponse to response
  * set each header in response object.
  *
- * @type {WebOutgoingPass}
  * @internal
  */
-const writeHeaders = (req, res, proxyRes, options) => {
+export const writeHeaders: WebOutgoingPass = (req, res, proxyRes, options) => {
   let rewriteCookieDomainConfig = options.cookieDomainRewrite,
-    rewriteCookiePathConfig = options.cookiePathRewrite,
-    rawHeaderKeyMap;
+    rewriteCookiePathConfig = options.cookiePathRewrite;
+  let rawHeaderKeyMap: Record<string, string> | undefined;
   const preserveHeaderKeyCase = options.preserveHeaderKeyCase,
-    setHeader = function (key, header) {
+    setHeader = function (key: string, header: string | string[] | undefined) {
       if (header == undefined) return;
       if (rewriteCookieDomainConfig && key.toLowerCase() === 'set-cookie') {
         header = common.rewriteCookieProperty(
@@ -97,7 +101,7 @@ const writeHeaders = (req, res, proxyRes, options) => {
           'path',
         );
       }
-      res.setHeader(String(key).trim(), header);
+      res.setHeader(String(key).trim(), header!);
     };
 
   if (typeof rewriteCookieDomainConfig === 'string') {
@@ -132,20 +136,19 @@ const writeHeaders = (req, res, proxyRes, options) => {
 /**
  * Set the statusCode from the proxyResponse
  *
- * @type {WebOutgoingPass}
  * @internal
  */
-const writeStatusCode = (req, res, proxyRes) => {
+export const writeStatusCode: WebOutgoingPass = (req, res, proxyRes) => {
   // From Node.js docs: response.writeHead(statusCode[, statusMessage][, headers])
   if (proxyRes.statusMessage) {
-    res.statusCode = proxyRes.statusCode;
+    res.statusCode = proxyRes.statusCode!;
     res.statusMessage = proxyRes.statusMessage;
   } else {
-    res.statusCode = proxyRes.statusCode;
+    res.statusCode = proxyRes.statusCode!;
   }
 };
 
-module.exports = {
+export default {
   removeChunked,
   setConnection,
   setRedirectHostRewrite,

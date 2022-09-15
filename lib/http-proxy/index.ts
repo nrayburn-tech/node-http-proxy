@@ -7,8 +7,8 @@ import https from 'https';
 import { Duplex } from 'stream';
 import { parse as parse_url } from 'url';
 import EE3 from 'eventemitter3';
-import web from './passes/web-incoming';
-import ws from './passes/ws-incoming';
+import * as web from './passes/web-incoming';
+import * as ws from './passes/ws-incoming';
 import { ServerOptions } from '../types';
 
 export type WebIncomingPass = (
