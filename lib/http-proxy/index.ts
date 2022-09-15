@@ -11,22 +11,41 @@ import web from './passes/web-incoming';
 import ws from './passes/ws-incoming';
 import { ServerOptions } from '../types';
 
-export interface PassInterface {
-  (
-    this: ProxyServerNew,
+export type WebIncomingPass = (
+  this: ProxyServerNew,
+  req: IncomingMessage,
+  res: ServerResponse,
+  options: ServerOptions,
+  server: ProxyServerNew,
+  errorCallback?: (
+    err: Error,
     req: IncomingMessage,
-    res: ServerResponse | Duplex,
-    options: ServerOptions,
-    head: Buffer,
-    server: ProxyServerNew,
-    errorCallback: (
-      err: Error,
-      req: IncomingMessage,
-      res: ServerResponse,
-      url: ServerOptions['target'],
-    ) => void,
-  ): boolean | unknown;
-}
+    res: ServerResponse,
+    url: ServerOptions['target'],
+  ) => void,
+) => boolean | unknown;
+export type WebSocketIncomingPass = (
+  this: ProxyServerNew,
+  req: IncomingMessage,
+  socket: Duplex,
+  options: ServerOptions,
+  head: Buffer,
+  server: ProxyServerNew,
+  errorCallback?: (
+    err: Error,
+    req: IncomingMessage,
+    socket: Duplex,
+    url: ServerOptions['target'],
+  ) => void,
+) => boolean | unknown;
+export type WebOutgoingPass = (
+  this: ProxyServerNew,
+  req: IncomingMessage,
+  res: ServerResponse,
+  proxyRes: IncomingMessage,
+  options: ServerOptions,
+  server: ProxyServerNew,
+) => boolean | unknown;
 
 /**
  * Returns a function that creates the loader for
@@ -100,19 +119,41 @@ function createRightProxy(type: 'web' | 'ws') {
          * refer to the connection socket
          * pass(req, socket, options, head)
          */
-        if (
-          passes[i].call(
-            this,
-            req,
-            resOrSocket,
-            requestOptions,
-            head,
-            this,
-            cbl,
-          )
-        ) {
-          // passes can return a truthy value to halt the loop
-          break;
+        if (type === 'web') {
+          if (
+            (passes[i] as WebIncomingPass).call(
+              this,
+              req,
+              resOrSocket as ServerResponse,
+              requestOptions,
+              this,
+              cbl,
+            )
+          ) {
+            // passes can return a truthy value to halt the loop
+            break;
+          }
+        } else if (type === 'ws') {
+          if (
+            (passes[i] as WebSocketIncomingPass).call(
+              this,
+              req,
+              resOrSocket as Duplex,
+              requestOptions,
+              head,
+              this,
+              cbl,
+            )
+          ) {
+            // passes can return a truthy value to halt the loop
+            break;
+          }
+        } else {
+          throw new Error(
+            'Unsupported proxy type supplied.  Expected "web" or "ws", received ' +
+              type +
+              '.',
+          );
         }
       }
     };
@@ -123,8 +164,8 @@ export class ProxyServerNew extends EE3 {
   options: ServerOptions;
   web: (req: IncomingMessage, res: ServerResponse) => void;
   ws: (req: IncomingMessage, socket: Duplex, head: Buffer) => void;
-  webPasses: PassInterface[];
-  wsPasses: PassInterface[];
+  webPasses: WebIncomingPass[];
+  wsPasses: WebSocketIncomingPass[];
 
   _server: HttpServer | undefined;
 
@@ -143,7 +184,11 @@ export class ProxyServerNew extends EE3 {
     this.on('error', this.onError, this);
   }
 
-  after(type: 'web' | 'ws', passName: string, callback: PassInterface) {
+  after(
+    type: 'web' | 'ws',
+    passName: string,
+    callback: WebIncomingPass | WebSocketIncomingPass,
+  ) {
     const passes = type === 'ws' ? this.wsPasses : this.webPasses;
     let i = -1;
 
@@ -156,7 +201,11 @@ export class ProxyServerNew extends EE3 {
     passes.splice(i++, 0, callback);
   }
 
-  before(type: 'web' | 'ws', passName: string, callback: PassInterface) {
+  before(
+    type: 'web' | 'ws',
+    passName: string,
+    callback: WebIncomingPass | WebSocketIncomingPass,
+  ) {
     const passes = type === 'ws' ? this.wsPasses : this.webPasses;
     let i = -1;
 
