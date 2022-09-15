@@ -31,12 +31,7 @@ export type WebSocketIncomingPass = (
   options: ServerOptions,
   head: Buffer,
   server: ProxyServerNew,
-  errorCallback?: (
-    err: Error,
-    req: IncomingMessage,
-    socket: Duplex,
-    url: ServerOptions['target'],
-  ) => void,
+  errorCallback?: (err: Error, req: IncomingMessage, socket: Duplex) => void,
 ) => boolean | unknown;
 export type WebOutgoingPass = (
   this: ProxyServerNew,

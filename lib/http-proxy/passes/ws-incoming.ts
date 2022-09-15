@@ -1,6 +1,8 @@
-const http = require('http'),
-  https = require('https'),
-  common = require('../common');
+import * as http from 'http';
+import { IncomingHttpHeaders } from 'http';
+import * as https from 'https';
+import * as common from '../common';
+import { WebSocketIncomingPass } from '../index';
 
 /*
  * Array of passes.
@@ -19,10 +21,9 @@ const http = require('http'),
  * WebSocket requests must have the `GET` method and
  * the `upgrade:websocket` header
  *
- * @type {WebSocketIncomingPass}
  * @internal
  */
-const checkMethodAndHeader = (req, socket) => {
+export const checkMethodAndHeader: WebSocketIncomingPass = (req, socket) => {
   if (req.method !== 'GET' || !req.headers.upgrade) {
     socket.destroy();
     return true;
@@ -37,10 +38,9 @@ const checkMethodAndHeader = (req, socket) => {
 /**
  * Sets `x-forwarded-*` headers if specified in config.
  *
- * @type {WebSocketIncomingPass}
  * @internal
  */
-const XHeaders = (req, socket, options) => {
+export const XHeaders: WebSocketIncomingPass = (req, socket, options) => {
   if (!options.xfwd) return;
 
   const values = {
@@ -49,7 +49,7 @@ const XHeaders = (req, socket, options) => {
     proto: common.hasEncryptedConnection(req) ? 'wss' : 'ws',
   };
 
-  ['for', 'port', 'proto'].forEach(function (header) {
+  (['for', 'port', 'proto'] as const).forEach(function (header) {
     req.headers['x-forwarded-' + header] =
       (req.headers['x-forwarded-' + header] || '') +
       (req.headers['x-forwarded-' + header] ? ',' : '') +
@@ -61,11 +61,20 @@ const XHeaders = (req, socket, options) => {
  * Does the actual proxying. Make the request and upgrade it
  * send the Switching Protocols request and pipe the sockets.
  *
- * @type {WebSocketIncomingPass}
  * @internal
  */
-const stream = (req, socket, options, head, server, clb) => {
-  const createHttpHeader = function (line, headers) {
+export const stream: WebSocketIncomingPass = (
+  req,
+  socket,
+  options,
+  head,
+  server,
+  clb,
+) => {
+  const createHttpHeader = function (
+    line: string,
+    headers: IncomingHttpHeaders,
+  ) {
     return (
       Object.keys(headers)
         .reduce(
@@ -156,7 +165,7 @@ const stream = (req, socket, options, head, server, clb) => {
 
   return proxyReq.end(); // XXX: CHECK IF THIS IS THIS CORRECT
 
-  function onOutgoingError(err) {
+  function onOutgoingError(err: Error) {
     if (clb) {
       clb(err, req, socket);
     } else {
@@ -166,7 +175,7 @@ const stream = (req, socket, options, head, server, clb) => {
   }
 };
 
-module.exports = {
+export default {
   checkMethodAndHeader,
   XHeaders,
   stream,
