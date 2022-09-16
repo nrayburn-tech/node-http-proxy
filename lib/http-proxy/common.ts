@@ -70,9 +70,8 @@ export function setupOutgoing(
     outgoing.auth = options.auth;
   }
 
-  // TODO: This should probably be options.ssl.ca
-  if (options.ca) {
-    outgoing.ca = options.ca;
+  if (options.ssl?.ca) {
+    outgoing.ca = options.ssl.ca;
   }
 
   if (isSSL.test(options[forward || 'target'].protocol)) {
@@ -178,6 +177,7 @@ export function getPort(req: IncomingMessage) {
  * @internal
  */
 export function hasEncryptedConnection(req: IncomingMessage) {
+  // @ts-expect-error
   return Boolean(req.connection.encrypted || req.connection.pair);
 }
 
