@@ -55,7 +55,7 @@ export type WebOutgoingPass = (
  *
  * @return Loader function that when called returns an iterator for the right passes
  *
- * @api private
+ * @internal
  */
 function createRightProxy(type: 'web' | 'ws') {
   return function (options: ServerOptions) {
@@ -106,14 +106,6 @@ function createRightProxy(type: 'web' | 'ws') {
       }
 
       for (let i = 0; i < passes.length; i++) {
-        /**
-         * Call of passes functions
-         * pass(req, res, options, head)
-         *
-         * In WebSockets case the `res` variable
-         * refer to the connection socket
-         * pass(req, socket, options, head)
-         */
         if (type === 'web') {
           if (
             (passes[i] as WebIncomingPass).call(
@@ -179,12 +171,13 @@ export class ProxyServerNew extends EE3 {
     this.on('error', this.onError, this);
   }
 
-  after(
+  // TODO: Tests for `after` and `before`.
+  after<T extends WebIncomingPass | WebSocketIncomingPass>(
     type: 'web' | 'ws',
     passName: string,
-    callback: WebIncomingPass | WebSocketIncomingPass,
+    callback: T,
   ) {
-    const passes = type === 'ws' ? this.wsPasses : this.webPasses;
+    const passes = (type === 'ws' ? this.wsPasses : this.webPasses) as T[];
     let i = -1;
 
     passes.forEach((v, idx) => {
@@ -196,12 +189,12 @@ export class ProxyServerNew extends EE3 {
     passes.splice(i++, 0, callback);
   }
 
-  before(
+  before<T extends WebIncomingPass | WebSocketIncomingPass>(
     type: 'web' | 'ws',
     passName: string,
-    callback: WebIncomingPass | WebSocketIncomingPass,
+    callback: T,
   ) {
-    const passes = type === 'ws' ? this.wsPasses : this.webPasses;
+    const passes = (type === 'ws' ? this.wsPasses : this.webPasses) as T[];
     let i = -1;
 
     passes.forEach((v, idx) => {

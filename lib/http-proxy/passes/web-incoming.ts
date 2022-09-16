@@ -1,5 +1,4 @@
 import * as httpNative from 'http';
-import { IncomingMessage } from 'http';
 import * as httpsNative from 'https';
 import * as followRedirects from 'follow-redirects';
 import * as webOutgoing from './web-outgoing';
@@ -52,7 +51,7 @@ export const XHeaders: WebIncomingPass = (req, res, options) => {
   if (!options.xfwd) return;
 
   const encrypted =
-    (req as IncomingMessage & { isSpdy?: boolean }).isSpdy ||
+    (req as httpNative.IncomingMessage & { isSpdy?: boolean }).isSpdy ||
     common.hasEncryptedConnection(req);
   const values = {
     for: req.connection.remoteAddress || req.socket.remoteAddress,
@@ -82,7 +81,10 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
   // And we begin!
   server.emit('start', req, res, options.target || options.forward);
 
-  const agents = options.followRedirects ? followRedirects : nativeAgents;
+  const agents = (options.followRedirects ? followRedirects : nativeAgents) as {
+    http: typeof httpNative;
+    https: typeof httpsNative;
+  };
   const http = agents.http;
   const https = agents.https;
 
