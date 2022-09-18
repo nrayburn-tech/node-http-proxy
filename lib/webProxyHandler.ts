@@ -1,7 +1,11 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { parse as parse_url } from 'url';
-import { ProxyServerNew, ResolvedServerOptions, ServerOptions } from './index';
 import { WebErrorCallback } from './eventCallbacks';
+import {
+  ProxyServer,
+  ProxyServerOptions,
+  ResolvedProxyServerOptions,
+} from './proxyServer';
 
 /**
  * Used for proxying regular HTTP(S) requests
@@ -11,10 +15,10 @@ import { WebErrorCallback } from './eventCallbacks';
  * @param callback - Error callback.
  */
 export type WebProxyHandler = (
-  this: ProxyServerNew,
+  this: ProxyServer,
   req: IncomingMessage,
   res: ServerResponse,
-  optionsOrCallback?: ServerOptions | WebErrorCallback,
+  optionsOrCallback?: ProxyServerOptions | WebErrorCallback,
   callback?: WebErrorCallback,
 ) => void;
 
@@ -23,12 +27,14 @@ export type WebProxyHandler = (
  *
  * @internal
  */
-export function createWebProxyHandler(options: ServerOptions): WebProxyHandler {
+export function createWebProxyHandler(
+  options: ProxyServerOptions,
+): WebProxyHandler {
   return function (
-    this: ProxyServerNew,
+    this: ProxyServer,
     req: IncomingMessage,
     res: ServerResponse,
-    optionsOrCallback?: ServerOptions | WebErrorCallback,
+    optionsOrCallback?: ProxyServerOptions | WebErrorCallback,
     callback?: WebErrorCallback,
   ) {
     const requestOptions =
@@ -55,7 +61,7 @@ export function createWebProxyHandler(options: ServerOptions): WebProxyHandler {
           this,
           req,
           res,
-          finalOptions as unknown as ResolvedServerOptions,
+          finalOptions as unknown as ResolvedProxyServerOptions,
           this,
           errorCallback,
         )

@@ -4,8 +4,8 @@ import * as httpsNative from 'https';
 import * as followRedirects from 'follow-redirects';
 import { webOutgoingPasses } from './web-outgoing';
 import { getPort, hasEncryptedConnection, setupOutgoing } from '../common';
-import { ProxyServerNew, ResolvedServerOptions } from '../index';
 import { WebErrorCallback } from '../eventCallbacks';
+import { ProxyServer, ResolvedProxyServerOptions } from '../proxyServer';
 
 const nativeAgents = { http: httpNative, https: httpsNative };
 
@@ -18,11 +18,11 @@ const nativeAgents = { http: httpNative, https: httpsNative };
  */
 
 export type WebIncomingPass = (
-  this: ProxyServerNew,
+  this: ProxyServer,
   req: IncomingMessage,
   res: ServerResponse,
-  options: ResolvedServerOptions,
-  server: ProxyServerNew,
+  options: ResolvedProxyServerOptions,
+  server: ProxyServer,
   errorCallback?: WebErrorCallback,
 ) => boolean | unknown;
 /**
@@ -157,7 +157,7 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
 
   function createErrorHandler(
     proxyReq: httpNative.ClientRequest,
-    url: ResolvedServerOptions['target'],
+    url: ResolvedProxyServerOptions['target'],
   ) {
     return function proxyError(err: Error) {
       if (

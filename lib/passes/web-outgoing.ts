@@ -1,7 +1,7 @@
 import url from 'url';
 import { rewriteCookieProperty } from '../common';
 import { IncomingMessage, ServerResponse } from 'http';
-import { ProxyServerNew, ResolvedServerOptions } from '../index';
+import { ProxyServer, ResolvedProxyServerOptions } from '../proxyServer';
 
 const redirectRegex = /^201|30(1|2|7|8)$/;
 
@@ -14,12 +14,12 @@ const redirectRegex = /^201|30(1|2|7|8)$/;
  */
 
 export type WebOutgoingPass = (
-  this: ProxyServerNew,
+  this: ProxyServer,
   req: IncomingMessage,
   res: ServerResponse,
   proxyRes: IncomingMessage,
-  options: ResolvedServerOptions,
-  server: ProxyServerNew,
+  options: ResolvedProxyServerOptions,
+  server: ProxyServer,
 ) => boolean | unknown;
 /**
  * If is an HTTP 1.0 request, remove chunk headers

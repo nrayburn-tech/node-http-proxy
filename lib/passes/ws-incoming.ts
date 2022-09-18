@@ -9,8 +9,8 @@ import {
   setupSocket,
 } from '../common';
 import { Socket } from 'net';
-import { ProxyServerNew, ResolvedServerOptions } from '../index';
 import { WebSocketErrorCallback } from '../eventCallbacks';
+import { ProxyServer, ResolvedProxyServerOptions } from '../proxyServer';
 
 /*
  * Array of passes.
@@ -26,12 +26,12 @@ import { WebSocketErrorCallback } from '../eventCallbacks';
  */
 
 export type WebSocketIncomingPass = (
-  this: ProxyServerNew,
+  this: ProxyServer,
   req: IncomingMessage,
   socket: Socket,
-  options: ResolvedServerOptions,
+  options: ResolvedProxyServerOptions,
   head: Buffer,
-  server: ProxyServerNew,
+  server: ProxyServer,
   errorCallback?: WebSocketErrorCallback,
 ) => boolean | unknown;
 
