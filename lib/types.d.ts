@@ -10,13 +10,11 @@
 
 /// <reference types="node" />
 
-import * as net from 'net';
-import * as http from 'http';
 import * as events from 'events';
 import * as url from 'url';
 import * as stream from 'stream';
 
-interface ProxyTargetDetailed {
+export interface ProxyTargetDetailed {
   host: string;
   port: number;
   protocol?: string | undefined;
@@ -37,104 +35,6 @@ declare class Server extends events.EventEmitter {
    * @param options - Config object passed to the proxy
    */
   constructor(options?: Server.ServerOptions);
-
-  /**
-   * Used for proxying regular HTTP(S) requests
-   * @param req - Client request.
-   * @param res - Client response.
-   * @param options - Additional options.
-   */
-  web(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-    options?: Server.ServerOptions,
-    callback?: Server.ErrorCallback,
-  ): void;
-
-  /**
-   * Used for proxying regular HTTP(S) requests
-   * @param req - Client request.
-   * @param socket - Client socket.
-   * @param head - Client head.
-   * @param options - Additionnal options.
-   */
-  ws(
-    req: http.IncomingMessage,
-    socket: any,
-    head: any,
-    options?: Server.ServerOptions,
-    callback?: Server.ErrorCallback,
-  ): void;
-
-  /**
-   * A function that wraps the object in a webserver, for your convenience
-   * @param port - Port to listen on
-   */
-  listen(port: number): Server;
-
-  /**
-   * A function that closes the inner webserver and stops listening on given port
-   */
-  close(callback?: () => void): void;
-
-  /**
-   * Creates the proxy server with specified options.
-   * @param options Config object passed to the proxy
-   * @returns Proxy object with handlers for `ws` and `web` requests
-   */
-  static createProxyServer(options?: Server.ServerOptions): Server;
-
-  /**
-   * Creates the proxy server with specified options.
-   * @param options Config object passed to the proxy
-   * @returns Proxy object with handlers for `ws` and `web` requests
-   */
-  static createServer(options?: Server.ServerOptions): Server;
-
-  /**
-   * Creates the proxy server with specified options.
-   * @param options Config object passed to the proxy
-   * @returns Proxy object with handlers for `ws` and `web` requests
-   */
-  static createProxy(options?: Server.ServerOptions): Server;
-
-  addListener(event: string, listener: () => void): this;
-
-  on(event: string, listener: () => void): this;
-  on(event: 'error', listener: Server.ErrorCallback): this;
-  on(event: 'start', listener: Server.StartCallback): this;
-  on(event: 'proxyReq', listener: Server.ProxyReqCallback): this;
-  on(event: 'proxyRes', listener: Server.ProxyResCallback): this;
-  on(event: 'proxyReqWs', listener: Server.ProxyReqWsCallback): this;
-  on(event: 'econnreset', listener: Server.EconnresetCallback): this;
-  on(event: 'end', listener: Server.EndCallback): this;
-  on(event: 'open', listener: Server.OpenCallback): this;
-  on(event: 'close', listener: Server.CloseCallback): this;
-
-  once(event: string, listener: () => void): this;
-  once(event: 'error', listener: Server.ErrorCallback): this;
-  once(event: 'start', listener: Server.StartCallback): this;
-  once(event: 'proxyReq', listener: Server.ProxyReqCallback): this;
-  once(event: 'proxyRes', listener: Server.ProxyResCallback): this;
-  once(event: 'proxyReqWs', listener: Server.ProxyReqWsCallback): this;
-  once(event: 'econnreset', listener: Server.EconnresetCallback): this;
-  once(event: 'end', listener: Server.EndCallback): this;
-  once(event: 'open', listener: Server.OpenCallback): this;
-  once(event: 'close', listener: Server.CloseCallback): this;
-
-  removeListener(event: string, listener: () => void): this;
-
-  removeAllListeners(event?: string): this;
-
-  getMaxListeners(): number;
-
-  setMaxListeners(n: number): this;
-
-  listeners(event: string): Array<() => void>;
-
-  emit(event: string, ...args: any[]): boolean;
-
-  listenerCount(type: string): number;
 }
 
 declare namespace Server {
@@ -203,77 +103,6 @@ declare namespace Server {
     /** Buffer */
     buffer?: stream.Stream | undefined;
   }
-
-  type StartCallback<
-    TIncomingMessage = http.IncomingMessage,
-    TServerResponse = http.ServerResponse,
-  > = (
-    req: TIncomingMessage,
-    res: TServerResponse,
-    target: ProxyTargetUrl,
-  ) => void;
-  type ProxyReqCallback<
-    TClientRequest = http.ClientRequest,
-    TIncomingMessage = http.IncomingMessage,
-    TServerResponse = http.ServerResponse,
-  > = (
-    proxyReq: TClientRequest,
-    req: TIncomingMessage,
-    res: TServerResponse,
-    options: ServerOptions,
-  ) => void;
-  type ProxyResCallback<
-    TIncomingMessage = http.IncomingMessage,
-    TServerResponse = http.ServerResponse,
-  > = (
-    proxyRes: TIncomingMessage,
-    req: TIncomingMessage,
-    res: TServerResponse,
-  ) => void;
-  type ProxyReqWsCallback<
-    TClientRequest = http.ClientRequest,
-    TIncomingMessage = http.IncomingMessage,
-  > = (
-    proxyReq: TClientRequest,
-    req: TIncomingMessage,
-    socket: net.Socket,
-    options: ServerOptions,
-    head: any,
-  ) => void;
-  type EconnresetCallback<
-    TError = Error,
-    TIncomingMessage = http.IncomingMessage,
-    TServerResponse = http.ServerResponse,
-  > = (
-    err: TError,
-    req: TIncomingMessage,
-    res: TServerResponse,
-    target: ProxyTargetUrl,
-  ) => void;
-  type EndCallback<
-    TIncomingMessage = http.IncomingMessage,
-    TServerResponse = http.ServerResponse,
-  > = (
-    req: TIncomingMessage,
-    res: TServerResponse,
-    proxyRes: TIncomingMessage,
-  ) => void;
-  type OpenCallback = (proxySocket: net.Socket) => void;
-  type CloseCallback<TIncomingMessage = http.IncomingMessage> = (
-    proxyRes: TIncomingMessage,
-    proxySocket: net.Socket,
-    proxyHead: any,
-  ) => void;
-  type ErrorCallback<
-    TError = Error,
-    TIncomingMessage = http.IncomingMessage,
-    TServerResponse = http.ServerResponse,
-  > = (
-    err: TError,
-    req: TIncomingMessage,
-    res: TServerResponse | net.Socket,
-    target?: ProxyTargetUrl,
-  ) => void;
 }
 
 export = Server;

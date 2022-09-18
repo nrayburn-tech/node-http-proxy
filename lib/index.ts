@@ -1,32 +1,96 @@
 import http, {
+  ClientRequest,
   IncomingMessage,
   Server as HttpServer,
   ServerResponse,
 } from 'http';
 import https from 'https';
 import { Duplex } from 'stream';
-import { parse as parse_url } from 'url';
+import url, { parse as parse_url } from 'url';
 import EE3 from 'eventemitter3';
 import { WebIncomingPass, webIncomingPasses } from './passes/web-incoming';
 import {
   WebSocketIncomingPass,
   websocketIncomingPasses,
 } from './passes/ws-incoming';
-import { ServerOptions } from './types';
+import { ProxyTargetDetailed, ProxyTargetUrl, ServerOptions } from './types';
 import { Socket } from 'net';
 
+// Events
+export type EventNames =
+  | 'close'
+  | 'econnreset'
+  | 'end'
+  | 'error'
+  | 'proxyReq'
+  | 'proxyReqWs'
+  | 'proxyRes'
+  | 'open'
+  | 'start';
+
+// Web events
+export type WebEconnResetCallback = (
+  err: Error,
+  req: IncomingMessage,
+  res: ServerResponse,
+  target: ProxyTargetUrl,
+) => void;
+export type WebEndCallback = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  proxyRes: IncomingMessage,
+) => void;
 export type WebErrorCallback = (
   err: Error,
   req: IncomingMessage,
   res: ServerResponse,
-  url: ServerOptions['target'],
+  url: ResolvedServerOptions['target'],
+) => void;
+export type WebReqCallback = (
+  proxyReq: ClientRequest,
+  req: IncomingMessage,
+  res: ServerResponse,
+  options: ResolvedServerOptions,
+) => void;
+export type WebResCallback = (
+  proxyRes: IncomingMessage,
+  req: IncomingMessage,
+  res: ServerResponse,
+) => void;
+export type WebStartCallback = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  target: ResolvedServerOptions['target'],
+) => void;
+
+// Websocket events
+export type WebSocketCloseCallback = (
+  err: Error,
+  req: IncomingMessage,
+  res: Socket,
+  head: Buffer,
 ) => void;
 export type WebSocketErrorCallback = (
   err: Error,
   req: IncomingMessage,
   socket: Duplex,
 ) => void;
+export type WebSocketReqCallback = (
+  proxyReq: ClientRequest,
+  req: IncomingMessage,
+  socket: Socket,
+  options: ResolvedServerOptions,
+  head: Buffer,
+) => void;
+export type WebSocketOpenCallback = (socket: Socket) => void;
 
+/**
+ * Used for proxying regular HTTP(S) requests
+ * @param req - Client request.
+ * @param res - Client response.
+ * @param optionsOrCallback - Additional options or error callback.
+ * @param callback - Error callback.
+ */
 export type WebProxyHandler = (
   this: ProxyServerNew,
   req: IncomingMessage,
@@ -34,6 +98,15 @@ export type WebProxyHandler = (
   optionsOrCallback?: ServerOptions | WebErrorCallback,
   callback?: WebErrorCallback,
 ) => void;
+
+/**
+ * Used for proxying regular HTTP(S) requests
+ * @param req - Client request.
+ * @param socket - Client socket.
+ * @param head - Client head.
+ * @param optionsOrCallback - Additional options or error callback.
+ * @param callback - Error callback.
+ */
 export type WebSocketProxyHandler = (
   this: ProxyServerNew,
   req: IncomingMessage,
@@ -42,6 +115,12 @@ export type WebSocketProxyHandler = (
   optionsOrCallback?: ServerOptions | WebSocketErrorCallback,
   callback?: WebSocketErrorCallback,
 ) => void;
+
+export interface ResolvedServerOptions
+  extends Omit<ServerOptions, 'forward' | 'target'> {
+  forward?: ProxyTargetDetailed | Partial<url.Url>;
+  target?: ProxyTargetDetailed | Partial<url.Url>;
+}
 
 /**
  * Creates a web request handler for the Proxy.
@@ -65,8 +144,9 @@ function createWebProxy(options: ServerOptions): WebProxyHandler {
 
     const passes = this.webPasses;
     (['target', 'forward'] as const).forEach(function (e) {
-      if (typeof finalOptions[e] === 'string')
+      if (typeof finalOptions[e] === 'string') {
         finalOptions[e] = parse_url(finalOptions[e] as string);
+      }
     });
 
     if (!finalOptions.target && !finalOptions.forward) {
@@ -76,11 +156,11 @@ function createWebProxy(options: ServerOptions): WebProxyHandler {
 
     for (let i = 0; i < passes.length; i++) {
       if (
-        (passes[i] as WebIncomingPass).call(
+        passes[i].call(
           this,
           req,
           res,
-          finalOptions,
+          finalOptions as unknown as ResolvedServerOptions,
           this,
           errorCallback,
         )
@@ -130,7 +210,7 @@ function createWebSocketProxy(options: ServerOptions): WebSocketProxyHandler {
           this,
           req,
           socket,
-          finalOptions,
+          finalOptions as unknown as ResolvedServerOptions,
           head,
           this,
           errorCallback,
@@ -143,7 +223,7 @@ function createWebSocketProxy(options: ServerOptions): WebSocketProxyHandler {
   };
 }
 
-export class ProxyServerNew extends EE3 {
+export class ProxyServerNew extends EE3<EventNames | string> {
   options: ServerOptions;
   web: WebProxyHandler;
   ws: WebSocketProxyHandler;
@@ -166,7 +246,7 @@ export class ProxyServerNew extends EE3 {
     this.webPasses = [...webIncomingPasses];
     this.wsPasses = [...websocketIncomingPasses];
 
-    this.on('error', this.onError, this);
+    super.on('error', this.onError, this);
   }
 
   // TODO: Tests for `after` and `before`.
@@ -204,15 +284,25 @@ export class ProxyServerNew extends EE3 {
     passes.splice(i, 0, callback);
   }
 
-  close(callback?: () => void) {
+  /**
+   * A function that closes the inner webserver and stops listening on given port.
+   * If a webserver was not created with {@link ProxyServerNew#listen}, then this does nothing.
+   * See {@link HttpServer#close} for details on how this works.
+   */
+  close(callback?: (err?: Error) => void) {
     if (this._server) {
-      this._server.close(() => {
+      this._server.close((err) => {
         this._server = undefined;
-        callback?.();
+        callback?.(err);
       });
     }
   }
 
+  /**
+   * A function that wraps the object in a webserver, for your convenience
+   * @param port - Port to listen on
+   * @param hostname - Hostname to listen on.
+   */
   listen(port: number, hostname?: string) {
     const closure = (req: IncomingMessage, res: ServerResponse) => {
       this.web(req, res);
@@ -247,26 +337,55 @@ export class ProxyServerNew extends EE3 {
       throw err;
     }
   }
+
+  on(event: 'close', listener: WebSocketCloseCallback): this;
+  on(event: 'econnreset', listener: WebEconnResetCallback): this;
+  on(event: 'end', listener: WebEndCallback): this;
+  on(event: 'error', listener: WebErrorCallback): this;
+  on(event: 'error', listener: WebSocketErrorCallback): this;
+  on(event: 'proxyReq', listener: WebReqCallback): this;
+  on(event: 'proxyReqWs', listener: WebSocketReqCallback): this;
+  on(event: 'proxyRes', listener: WebResCallback): this;
+  on(event: 'open', listener: WebSocketOpenCallback): this;
+  on(event: 'start', listener: WebStartCallback): this;
+  on(event: string, listener: (...args: any[]) => void) {
+    super.on(event, listener);
+    return this;
+  }
+
+  once(event: 'close', listener: WebSocketCloseCallback): this;
+  once(event: 'econnreset', listener: WebEconnResetCallback): this;
+  once(event: 'end', listener: WebEndCallback): this;
+  once(event: 'error', listener: WebErrorCallback): this;
+  once(event: 'error', listener: WebSocketErrorCallback): this;
+  once(event: 'proxyReq', listener: WebReqCallback): this;
+  once(event: 'proxyReqWs', listener: WebSocketReqCallback): this;
+  once(event: 'proxyRes', listener: WebResCallback): this;
+  once(event: 'open', listener: WebSocketOpenCallback): this;
+  once(event: 'start', listener: WebStartCallback): this;
+  once(event: string, listener: (...args: any[]) => void) {
+    super.once(event, listener);
+    return this;
+  }
 }
 
 /**
- * Creates the proxy server.
- *
- * Examples:
- *
- *    httpProxy.createServer({ .. }, 8000)
- *    // => '{ web: [Function], ws: [Function] ... }'
- *
+ * Creates the proxy server with specified options.
  * @param options Config object passed to the proxy
- *
- * @return Proxy object with handlers for `ws` and `web` requests
- *
- * @api public
+ * @returns Proxy object with handlers for `ws` and `web` requests
  */
-export function createProxyServer(options: ServerOptions) {
+export function createProxy(options: ServerOptions) {
   return new ProxyServerNew(options);
 }
 
-export const createProxy = createProxyServer;
+/**
+ * @deprecated - Use {@link createProxyServer} instead.
+ * @see {createProxyServer}
+ */
+export const createProxyServer = createProxy;
 
-export const createServer = createProxyServer;
+/**
+ * @deprecated - Use {@link createProxyServer} instead.
+ * @see {createProxyServer}
+ */
+export const createServer = createProxy;

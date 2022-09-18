@@ -3,7 +3,7 @@ import { default as required } from 'requires-port';
 import { Socket } from 'net';
 import { IncomingMessage } from 'http';
 import { RequestOptions } from 'https';
-import { ServerOptions } from './types';
+import { ResolvedServerOptions } from './index';
 
 const upgradeHeader = /(^|,)\s*upgrade\s*($|,)/i;
 
@@ -34,7 +34,7 @@ export const isSSL = /^https|wss/;
 
 export function setupOutgoing(
   outgoing: RequestOptions,
-  options: ServerOptions,
+  options: ResolvedServerOptions,
   req: IncomingMessage,
   forward?: 'forward' | 'target',
 ) {

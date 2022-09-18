@@ -9,8 +9,11 @@ import {
   setupSocket,
 } from '../common';
 import { Socket } from 'net';
-import { ServerOptions } from '../types';
-import { ProxyServerNew, WebSocketErrorCallback } from '../index';
+import {
+  ProxyServerNew,
+  ResolvedServerOptions,
+  WebSocketErrorCallback,
+} from '../index';
 
 /*
  * Array of passes.
@@ -29,7 +32,7 @@ export type WebSocketIncomingPass = (
   this: ProxyServerNew,
   req: IncomingMessage,
   socket: Socket,
-  options: ServerOptions,
+  options: ResolvedServerOptions,
   head: Buffer,
   server: ProxyServerNew,
   errorCallback?: WebSocketErrorCallback,

@@ -1,8 +1,7 @@
 import url from 'url';
 import { rewriteCookieProperty } from '../common';
 import { IncomingMessage, ServerResponse } from 'http';
-import { ServerOptions } from '../types';
-import { ProxyServerNew } from '../index';
+import { ProxyServerNew, ResolvedServerOptions } from '../index';
 
 const redirectRegex = /^201|30(1|2|7|8)$/;
 
@@ -19,7 +18,7 @@ export type WebOutgoingPass = (
   req: IncomingMessage,
   res: ServerResponse,
   proxyRes: IncomingMessage,
-  options: ServerOptions,
+  options: ResolvedServerOptions,
   server: ProxyServerNew,
 ) => boolean | unknown;
 /**
