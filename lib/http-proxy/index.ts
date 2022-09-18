@@ -11,18 +11,41 @@ import * as web from './passes/web-incoming';
 import * as ws from './passes/ws-incoming';
 import { ServerOptions } from '../types';
 
+export type WebErrorCallback = (
+  err: Error,
+  req: IncomingMessage,
+  res: ServerResponse,
+  url: ServerOptions['target'],
+) => void;
+export type WebSocketErrorCallback = (
+  err: Error,
+  req: IncomingMessage,
+  socket: Duplex,
+) => void;
+
+export type WebProxyHandler = (
+  this: ProxyServerNew,
+  req: IncomingMessage,
+  res: ServerResponse,
+  optionsOrCallback?: ServerOptions | WebErrorCallback,
+  callback?: WebErrorCallback,
+) => void;
+export type WebSocketProxyHandler = (
+  this: ProxyServerNew,
+  req: IncomingMessage,
+  socket: Duplex,
+  head: Buffer,
+  optionsOrCallback?: ServerOptions | WebSocketErrorCallback,
+  callback?: WebSocketErrorCallback,
+) => void;
+
 export type WebIncomingPass = (
   this: ProxyServerNew,
   req: IncomingMessage,
   res: ServerResponse,
   options: ServerOptions,
   server: ProxyServerNew,
-  errorCallback?: (
-    err: Error,
-    req: IncomingMessage,
-    res: ServerResponse,
-    url: ServerOptions['target'],
-  ) => void,
+  errorCallback?: WebErrorCallback,
 ) => boolean | unknown;
 export type WebSocketIncomingPass = (
   this: ProxyServerNew,
@@ -31,7 +54,7 @@ export type WebSocketIncomingPass = (
   options: ServerOptions,
   head: Buffer,
   server: ProxyServerNew,
-  errorCallback?: (err: Error, req: IncomingMessage, socket: Duplex) => void,
+  errorCallback?: WebSocketErrorCallback,
 ) => boolean | unknown;
 export type WebOutgoingPass = (
   this: ProxyServerNew,
@@ -43,114 +66,109 @@ export type WebOutgoingPass = (
 ) => boolean | unknown;
 
 /**
- * Returns a function that creates the loader for
- * either `ws` or `web`'s  passes.
- *
- * Examples:
- *
- *    createRightProxy('ws')
- *    // => [Function]
- *
- * @param type
- *
- * @return Loader function that when called returns an iterator for the right passes
+ * Creates a web request handler for the Proxy.
  *
  * @internal
  */
-function createRightProxy(type: 'web' | 'ws') {
-  return function (options: ServerOptions) {
-    return function (
-      this: ProxyServerNew,
-      req: IncomingMessage,
-      resOrSocket: ServerResponse | Duplex,
-    ): void {
-      const passes = type === 'ws' ? this.wsPasses : this.webPasses,
-        // TODO: Migrate away from arguments.
-        // eslint-disable-next-line prefer-rest-params
-        args = [].slice.call(arguments) as any[];
-      let cntr = args.length - 1,
-        head,
-        cbl;
+function createWebProxy(options: ServerOptions): WebProxyHandler {
+  return function (
+    this: ProxyServerNew,
+    req: IncomingMessage,
+    res: ServerResponse,
+    optionsOrCallback?: ServerOptions | WebErrorCallback,
+    callback?: WebErrorCallback,
+  ) {
+    const requestOptions =
+      typeof optionsOrCallback === 'function' ? {} : optionsOrCallback ?? {};
+    const errorCallback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : callback;
 
-      /* optional args parse begin */
-      if (typeof args[cntr] === 'function') {
-        cbl = args[cntr];
+    const finalOptions = Object.assign({}, options, requestOptions);
 
-        cntr--;
+    const passes = this.webPasses;
+    (['target', 'forward'] as const).forEach(function (e) {
+      if (typeof finalOptions[e] === 'string')
+        finalOptions[e] = parse_url(finalOptions[e] as string);
+    });
+
+    if (!finalOptions.target && !finalOptions.forward) {
+      this.emit('error', new Error('Must provide a proper URL as target'));
+      return;
+    }
+
+    for (let i = 0; i < passes.length; i++) {
+      if (
+        (passes[i] as WebIncomingPass).call(
+          this,
+          req,
+          res,
+          finalOptions,
+          this,
+          errorCallback,
+        )
+      ) {
+        // passes can return a truthy value to halt the loop
+        break;
       }
+    }
+  };
+}
 
-      let requestOptions = options;
-      if (!(args[cntr] instanceof Buffer) && args[cntr] !== resOrSocket) {
-        //Copy global options
-        requestOptions = Object.assign({}, options);
-        //Overwrite with request options
-        Object.assign(requestOptions, args[cntr]);
+/**
+ * Creates a websocket request handler for the Proxy.
+ *
+ * @internal
+ */
+function createWebSocketProxy(options: ServerOptions): WebSocketProxyHandler {
+  return function (
+    this: ProxyServerNew,
+    req: IncomingMessage,
+    socket: Duplex,
+    head: Buffer,
+    optionsOrCallback?: ServerOptions | WebSocketErrorCallback,
+    callback?: WebSocketErrorCallback,
+  ) {
+    const requestOptions =
+      typeof optionsOrCallback === 'function' ? {} : optionsOrCallback ?? {};
+    const errorCallback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : callback;
 
-        cntr--;
+    const finalOptions = Object.assign({}, options, requestOptions);
+
+    const passes = this.wsPasses;
+    (['target', 'forward'] as const).forEach(function (e) {
+      if (typeof finalOptions[e] === 'string')
+        finalOptions[e] = parse_url(finalOptions[e] as string);
+    });
+
+    if (!finalOptions.target && !finalOptions.forward) {
+      this.emit('error', new Error('Must provide a proper URL as target'));
+      return;
+    }
+
+    for (let i = 0; i < passes.length; i++) {
+      if (
+        passes[i].call(
+          this,
+          req,
+          socket,
+          finalOptions,
+          head,
+          this,
+          errorCallback,
+        )
+      ) {
+        // passes can return a truthy value to halt the loop
+        break;
       }
-
-      if (args[cntr] instanceof Buffer) {
-        head = args[cntr];
-      }
-
-      /* optional args parse end */
-
-      (['target', 'forward'] as const).forEach(function (e) {
-        if (typeof requestOptions[e] === 'string')
-          requestOptions[e] = parse_url(requestOptions[e] as string);
-      });
-
-      if (!requestOptions.target && !requestOptions.forward) {
-        this.emit('error', new Error('Must provide a proper URL as target'));
-        return;
-      }
-
-      for (let i = 0; i < passes.length; i++) {
-        if (type === 'web') {
-          if (
-            (passes[i] as WebIncomingPass).call(
-              this,
-              req,
-              resOrSocket as ServerResponse,
-              requestOptions,
-              this,
-              cbl,
-            )
-          ) {
-            // passes can return a truthy value to halt the loop
-            break;
-          }
-        } else if (type === 'ws') {
-          if (
-            (passes[i] as WebSocketIncomingPass).call(
-              this,
-              req,
-              resOrSocket as Duplex,
-              requestOptions,
-              head,
-              this,
-              cbl,
-            )
-          ) {
-            // passes can return a truthy value to halt the loop
-            break;
-          }
-        } else {
-          throw new Error(
-            'Unsupported proxy type supplied.  Expected "web" or "ws", received ' +
-              type +
-              '.',
-          );
-        }
-      }
-    };
+    }
   };
 }
 
 export class ProxyServerNew extends EE3 {
   options: ServerOptions;
-  web: (req: IncomingMessage, res: ServerResponse) => void;
-  ws: (req: IncomingMessage, socket: Duplex, head: Buffer) => void;
+  web: WebProxyHandler;
+  ws: WebSocketProxyHandler;
   webPasses: WebIncomingPass[];
   wsPasses: WebSocketIncomingPass[];
 
@@ -161,8 +179,8 @@ export class ProxyServerNew extends EE3 {
     options = options || {};
     options.prependPath = options.prependPath !== false;
 
-    this.web = createRightProxy('web')(options);
-    this.ws = createRightProxy('ws')(options);
+    this.web = createWebProxy(options);
+    this.ws = createWebSocketProxy(options);
     this.options = options;
 
     this.webPasses = [web.deleteLength, web.timeout, web.XHeaders, web.stream];
