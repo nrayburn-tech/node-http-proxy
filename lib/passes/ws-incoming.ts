@@ -9,11 +9,8 @@ import {
   setupSocket,
 } from '../common';
 import { Socket } from 'net';
-import {
-  ProxyServerNew,
-  ResolvedServerOptions,
-  WebSocketErrorCallback,
-} from '../index';
+import { ProxyServerNew, ResolvedServerOptions } from '../index';
+import { WebSocketErrorCallback } from '../eventCallbacks';
 
 /*
  * Array of passes.

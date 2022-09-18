@@ -4,11 +4,8 @@ import * as httpsNative from 'https';
 import * as followRedirects from 'follow-redirects';
 import { webOutgoingPasses } from './web-outgoing';
 import { getPort, hasEncryptedConnection, setupOutgoing } from '../common';
-import {
-  ProxyServerNew,
-  ResolvedServerOptions,
-  WebErrorCallback,
-} from '../index';
+import { ProxyServerNew, ResolvedServerOptions } from '../index';
+import { WebErrorCallback } from '../eventCallbacks';
 
 const nativeAgents = { http: httpNative, https: httpsNative };
 
