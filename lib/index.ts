@@ -10,6 +10,7 @@ import EE3 from 'eventemitter3';
 import { webIncomingPasses } from './passes/web-incoming';
 import { websocketIncomingPasses } from './passes/ws-incoming';
 import { ServerOptions } from './types';
+import { Socket } from 'net';
 
 export type WebErrorCallback = (
   err: Error,
@@ -33,7 +34,7 @@ export type WebProxyHandler = (
 export type WebSocketProxyHandler = (
   this: ProxyServerNew,
   req: IncomingMessage,
-  socket: Duplex,
+  socket: Socket,
   head: Buffer,
   optionsOrCallback?: ServerOptions | WebSocketErrorCallback,
   callback?: WebSocketErrorCallback,
@@ -50,7 +51,7 @@ export type WebIncomingPass = (
 export type WebSocketIncomingPass = (
   this: ProxyServerNew,
   req: IncomingMessage,
-  socket: Duplex,
+  socket: Socket,
   options: ServerOptions,
   head: Buffer,
   server: ProxyServerNew,
@@ -123,7 +124,7 @@ function createWebSocketProxy(options: ServerOptions): WebSocketProxyHandler {
   return function (
     this: ProxyServerNew,
     req: IncomingMessage,
-    socket: Duplex,
+    socket: Socket,
     head: Buffer,
     optionsOrCallback?: ServerOptions | WebSocketErrorCallback,
     callback?: WebSocketErrorCallback,
@@ -247,7 +248,7 @@ export class ProxyServerNew extends EE3 {
     if (this.options.ws) {
       server.on(
         'upgrade',
-        (req: IncomingMessage, socket: Duplex, head: Buffer) => {
+        (req: IncomingMessage, socket: Socket, head: Buffer) => {
           this.ws(req, socket, head);
         },
       );
