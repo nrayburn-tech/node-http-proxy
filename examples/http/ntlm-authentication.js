@@ -1,4 +1,4 @@
-const httpProxy = require('../../lib/http-proxy');
+const httpProxy = require('../../lib');
 const Agent = require('agentkeepalive');
 const { getPort } = require('../helpers/port');
 

@@ -4,7 +4,7 @@ import * as followRedirects from 'follow-redirects';
 import * as webOutgoing from './web-outgoing';
 import * as common from '../common';
 import type { WebIncomingPass } from '../index';
-import type { ServerOptions } from '../../types';
+import type { ServerOptions } from '../types';
 
 const nativeAgents = { http: httpNative, https: httpsNative };
 

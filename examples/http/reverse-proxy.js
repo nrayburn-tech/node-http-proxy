@@ -23,7 +23,7 @@
 
 const http = require('http'),
   net = require('net'),
-  httpProxy = require('../../lib/http-proxy'),
+  httpProxy = require('../../lib'),
   url = require('url');
 const { getPort } = require('../helpers/port');
 

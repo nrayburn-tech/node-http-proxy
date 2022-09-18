@@ -1,7 +1,4 @@
-import {
-  checkMethodAndHeader,
-  XHeaders,
-} from '../lib/http-proxy/passes/ws-incoming';
+import { checkMethodAndHeader, XHeaders } from '../lib/passes/ws-incoming';
 import { describe, expect, it } from 'vitest';
 
 describe('lib/http-proxy/passes/ws-incoming.ts', () => {

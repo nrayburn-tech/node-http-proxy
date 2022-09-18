@@ -3,7 +3,7 @@ import { default as required } from 'requires-port';
 import { Socket } from 'net';
 import { IncomingMessage } from 'http';
 import { RequestOptions } from 'https';
-import { ServerOptions } from '../types';
+import { ServerOptions } from './types';
 
 const upgradeHeader = /(^|,)\s*upgrade\s*($|,)/i;
 

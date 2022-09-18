@@ -1,4 +1,4 @@
-import { setupOutgoing, setupSocket } from '../lib/http-proxy/common';
+import { setupOutgoing, setupSocket } from '../lib/common';
 import { parse } from 'url';
 import { describe, expect, it } from 'vitest';
 

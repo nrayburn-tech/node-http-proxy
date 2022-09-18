@@ -1,4 +1,4 @@
-import { createProxyServer, createServer } from '../lib/http-proxy';
+import { createProxyServer, createServer } from '../lib';
 import http, { request } from 'http';
 import https from 'https';
 import { join } from 'path';

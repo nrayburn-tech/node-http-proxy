@@ -29,7 +29,7 @@ const http = require('http'),
   request = require('request'),
   queryString = require('querystring'),
   bodyParser = require('body-parser'),
-  httpProxy = require('../../lib/http-proxy'),
+  httpProxy = require('../../lib'),
   proxy = httpProxy.createProxyServer({});
 const { getPort } = require('../helpers/port');
 

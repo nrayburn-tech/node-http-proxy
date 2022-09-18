@@ -25,7 +25,7 @@
 */
 
 const https = require('https'),
-  httpProxy = require('../../lib/http-proxy');
+  httpProxy = require('../../lib');
 const { getPort } = require('../helpers/port');
 
 const proxyPort = getPort();

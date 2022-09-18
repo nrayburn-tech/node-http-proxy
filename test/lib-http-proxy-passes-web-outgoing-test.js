@@ -4,7 +4,7 @@ import {
   setRedirectHostRewrite,
   writeHeaders,
   writeStatusCode,
-} from '../lib/http-proxy/passes/web-outgoing';
+} from '../lib/passes/web-outgoing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('lib/http-proxy/passes/web-outgoing.ts', () => {

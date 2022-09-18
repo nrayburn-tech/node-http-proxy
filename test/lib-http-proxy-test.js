@@ -1,4 +1,4 @@
-import { createProxyServer } from '../lib/http-proxy';
+import { createProxyServer } from '../lib';
 import { createServer, request } from 'http';
 import { connect } from 'net';
 import ws, { WebSocketServer } from 'ws';

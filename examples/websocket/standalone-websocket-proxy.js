@@ -26,7 +26,7 @@
 
 const util = require('util'),
   http = require('http'),
-  httpProxy = require('../../lib/http-proxy'),
+  httpProxy = require('../../lib'),
   io = require('socket.io'),
   client = require('socket.io-client');
 const { getPort } = require('../helpers/port');

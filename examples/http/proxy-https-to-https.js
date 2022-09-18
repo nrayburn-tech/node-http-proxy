@@ -27,7 +27,7 @@
 const https = require('https'),
   fs = require('fs'),
   path = require('path'),
-  httpProxy = require('../../lib/http-proxy'),
+  httpProxy = require('../../lib'),
   fixturesDir = path.join(__dirname, '..', '..', 'test', 'fixtures'),
   httpsOpts = {
     key: fs.readFileSync(path.join(fixturesDir, 'agent2-key.pem'), 'utf8'),

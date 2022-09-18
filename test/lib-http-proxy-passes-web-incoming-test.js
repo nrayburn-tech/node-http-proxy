@@ -1,5 +1,5 @@
-import webPasses from '../lib/http-proxy/passes/web-incoming';
-import { createProxyServer } from '../lib/http-proxy';
+import webPasses from '../lib/passes/web-incoming';
+import { createProxyServer } from '../lib';
 import concat from 'concat-stream';
 import { parallel } from 'async';
 import { parse } from 'url';
