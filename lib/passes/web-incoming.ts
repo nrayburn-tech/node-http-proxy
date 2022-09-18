@@ -1,10 +1,12 @@
 import * as httpNative from 'http';
+import { IncomingMessage, ServerResponse } from 'http';
 import * as httpsNative from 'https';
 import * as followRedirects from 'follow-redirects';
 import { webOutgoingPasses } from './web-outgoing';
 import { getPort, hasEncryptedConnection, setupOutgoing } from '../common';
-import type { WebIncomingPass } from '../index';
 import type { ServerOptions } from '../types';
+import { ServerOptions } from '../types';
+import { ProxyServerNew, WebErrorCallback } from '../index';
 
 const nativeAgents = { http: httpNative, https: httpsNative };
 
@@ -16,6 +18,14 @@ const nativeAgents = { http: httpNative, https: httpsNative };
  * flexible.
  */
 
+export type WebIncomingPass = (
+  this: ProxyServerNew,
+  req: IncomingMessage,
+  res: ServerResponse,
+  options: ServerOptions,
+  server: ProxyServerNew,
+  errorCallback?: WebErrorCallback,
+) => boolean | unknown;
 /**
  * Sets `content-length` to '0' if request is of DELETE type.
  *

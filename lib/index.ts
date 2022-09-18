@@ -7,8 +7,11 @@ import https from 'https';
 import { Duplex } from 'stream';
 import { parse as parse_url } from 'url';
 import EE3 from 'eventemitter3';
-import { webIncomingPasses } from './passes/web-incoming';
-import { websocketIncomingPasses } from './passes/ws-incoming';
+import { WebIncomingPass, webIncomingPasses } from './passes/web-incoming';
+import {
+  WebSocketIncomingPass,
+  websocketIncomingPasses,
+} from './passes/ws-incoming';
 import { ServerOptions } from './types';
 import { Socket } from 'net';
 
@@ -39,32 +42,6 @@ export type WebSocketProxyHandler = (
   optionsOrCallback?: ServerOptions | WebSocketErrorCallback,
   callback?: WebSocketErrorCallback,
 ) => void;
-
-export type WebIncomingPass = (
-  this: ProxyServerNew,
-  req: IncomingMessage,
-  res: ServerResponse,
-  options: ServerOptions,
-  server: ProxyServerNew,
-  errorCallback?: WebErrorCallback,
-) => boolean | unknown;
-export type WebSocketIncomingPass = (
-  this: ProxyServerNew,
-  req: IncomingMessage,
-  socket: Socket,
-  options: ServerOptions,
-  head: Buffer,
-  server: ProxyServerNew,
-  errorCallback?: WebSocketErrorCallback,
-) => boolean | unknown;
-export type WebOutgoingPass = (
-  this: ProxyServerNew,
-  req: IncomingMessage,
-  res: ServerResponse,
-  proxyRes: IncomingMessage,
-  options: ServerOptions,
-  server: ProxyServerNew,
-) => boolean | unknown;
 
 /**
  * Creates a web request handler for the Proxy.

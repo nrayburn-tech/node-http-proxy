@@ -1,5 +1,5 @@
 import * as http from 'http';
-import { IncomingHttpHeaders } from 'http';
+import { IncomingHttpHeaders, IncomingMessage } from 'http';
 import * as https from 'https';
 import {
   getPort,
@@ -8,7 +8,9 @@ import {
   setupOutgoing,
   setupSocket,
 } from '../common';
-import { WebSocketIncomingPass } from '../index';
+import { Socket } from 'net';
+import { ServerOptions } from '../types';
+import { ProxyServerNew, WebSocketErrorCallback } from '../index';
 
 /*
  * Array of passes.
@@ -22,6 +24,16 @@ import { WebSocketIncomingPass } from '../index';
  * Websockets Passes
  *
  */
+
+export type WebSocketIncomingPass = (
+  this: ProxyServerNew,
+  req: IncomingMessage,
+  socket: Socket,
+  options: ServerOptions,
+  head: Buffer,
+  server: ProxyServerNew,
+  errorCallback?: WebSocketErrorCallback,
+) => boolean | unknown;
 
 /**
  * WebSocket requests must have the `GET` method and
@@ -119,6 +131,7 @@ export const stream: WebSocketIncomingPass = (
   // Error Handler
   proxyReq.on('error', onOutgoingError);
   proxyReq.on('response', function (res) {
+    // TODO: Does this actually do anything?  `upgrade` isn't on `res`.
     // if upgrade event isn't going to happen, close the socket
     if (!res.upgrade) {
       socket.write(
