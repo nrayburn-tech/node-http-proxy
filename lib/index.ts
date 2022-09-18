@@ -7,8 +7,8 @@ import https from 'https';
 import { Duplex } from 'stream';
 import { parse as parse_url } from 'url';
 import EE3 from 'eventemitter3';
-import * as web from './passes/web-incoming';
-import * as ws from './passes/ws-incoming';
+import { webIncomingPasses } from './passes/web-incoming';
+import { websocketIncomingPasses } from './passes/ws-incoming';
 import { ServerOptions } from './types';
 
 export type WebErrorCallback = (
@@ -183,8 +183,10 @@ export class ProxyServerNew extends EE3 {
     this.ws = createWebSocketProxy(options);
     this.options = options;
 
-    this.webPasses = [web.deleteLength, web.timeout, web.XHeaders, web.stream];
-    this.wsPasses = [ws.checkMethodAndHeader, ws.XHeaders, ws.stream];
+    // Create copies, so that modifications to the array for this proxy doesn't
+    // leak into all instances of a proxy.
+    this.webPasses = [...webIncomingPasses];
+    this.wsPasses = [...websocketIncomingPasses];
 
     this.on('error', this.onError, this);
   }

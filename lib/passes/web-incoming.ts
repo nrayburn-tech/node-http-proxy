@@ -1,8 +1,8 @@
 import * as httpNative from 'http';
 import * as httpsNative from 'https';
 import * as followRedirects from 'follow-redirects';
-import * as webOutgoing from './web-outgoing';
-import * as common from '../common';
+import { webOutgoingPasses } from './web-outgoing';
+import { getPort, hasEncryptedConnection, setupOutgoing } from '../common';
 import type { WebIncomingPass } from '../index';
 import type { ServerOptions } from '../types';
 
@@ -52,10 +52,10 @@ export const XHeaders: WebIncomingPass = (req, res, options) => {
 
   const encrypted =
     (req as httpNative.IncomingMessage & { isSpdy?: boolean }).isSpdy ||
-    common.hasEncryptedConnection(req);
+    hasEncryptedConnection(req);
   const values = {
     for: req.connection.remoteAddress || req.socket.remoteAddress,
-    port: common.getPort(req),
+    port: getPort(req),
     proto: encrypted ? 'https' : 'http',
   };
 
@@ -92,7 +92,7 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
     // If forward enable, so just pipe the request
     const forwardReq: httpNative.ClientRequest = (
       options.forward.protocol === 'https:' ? https : http
-    ).request(common.setupOutgoing(options.ssl || {}, options, req, 'forward'));
+    ).request(setupOutgoing(options.ssl || {}, options, req, 'forward'));
 
     // error handler (e.g. ECONNRESET, ECONNREFUSED)
     // Handle errors on incoming request as well as it makes sense to
@@ -109,7 +109,7 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
   // Request initialization
   const proxyReq: httpNative.ClientRequest = (
     options.target.protocol === 'https:' ? https : http
-  ).request(common.setupOutgoing(options.ssl || {}, options, req));
+  ).request(setupOutgoing(options.ssl || {}, options, req));
 
   // Enable developers to modify the proxyReq before headers are sent
   proxyReq.on('socket', function () {
@@ -176,17 +176,10 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
       server.emit('proxyRes', proxyRes, req, res);
     }
 
-    const outgoingPasses = [
-      webOutgoing.removeChunked,
-      webOutgoing.setConnection,
-      webOutgoing.setRedirectHostRewrite,
-      webOutgoing.writeHeaders,
-      webOutgoing.writeStatusCode,
-    ];
     if (!res.headersSent && !options.selfHandleResponse) {
-      for (let i = 0; i < outgoingPasses.length; i++) {
+      for (let i = 0; i < webOutgoingPasses.length; i++) {
         if (
-          outgoingPasses[i].call(server, req, res, proxyRes, options, server)
+          webOutgoingPasses[i].call(server, req, res, proxyRes, options, server)
         ) {
           break;
         }
@@ -206,9 +199,4 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
   });
 };
 
-export default {
-  deleteLength,
-  timeout,
-  XHeaders,
-  stream,
-};
+export const webIncomingPasses = [deleteLength, timeout, XHeaders, stream];

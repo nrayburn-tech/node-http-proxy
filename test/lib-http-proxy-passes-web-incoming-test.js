@@ -1,4 +1,4 @@
-import webPasses from '../lib/passes/web-incoming';
+import { deleteLength, timeout, XHeaders } from '../lib/passes/web-incoming';
 import { createProxyServer } from '../lib';
 import concat from 'concat-stream';
 import { parallel } from 'async';
@@ -14,7 +14,7 @@ describe('lib/http-proxy/passes/web-incoming.ts', () => {
         method: 'DELETE',
         headers: {},
       };
-      webPasses.deleteLength(stubRequest, {}, {});
+      deleteLength(stubRequest, {}, {});
       expect(stubRequest.headers['content-length']).toEqual('0');
     });
 
@@ -23,7 +23,7 @@ describe('lib/http-proxy/passes/web-incoming.ts', () => {
         method: 'OPTIONS',
         headers: {},
       };
-      webPasses.deleteLength(stubRequest, {}, {});
+      deleteLength(stubRequest, {}, {});
       expect(stubRequest.headers['content-length']).toEqual('0');
     });
 
@@ -34,7 +34,7 @@ describe('lib/http-proxy/passes/web-incoming.ts', () => {
           'transfer-encoding': 'chunked',
         },
       };
-      webPasses.deleteLength(stubRequest, {}, {});
+      deleteLength(stubRequest, {}, {});
       expect(stubRequest.headers['content-length']).toEqual('0');
       expect(stubRequest.headers).not.toHaveProperty('transfer-encoding');
     });
@@ -42,17 +42,17 @@ describe('lib/http-proxy/passes/web-incoming.ts', () => {
 
   describe('#timeout', () => {
     it('should set timeout on the socket', () => {
-      let timeout = 0;
+      let timeoutLength = 0;
       const stubRequest = {
         socket: {
           setTimeout: function (value) {
-            timeout = value;
+            timeoutLength = value;
           },
         },
       };
 
-      webPasses.timeout(stubRequest, {}, { timeout: 5000 });
-      expect(timeout).toEqual(5000);
+      timeout(stubRequest, {}, { timeout: 5000 });
+      expect(timeoutLength).toEqual(5000);
     });
   });
 
@@ -68,7 +68,7 @@ describe('lib/http-proxy/passes/web-incoming.ts', () => {
     };
 
     it('set the correct x-forwarded-* headers', () => {
-      webPasses.XHeaders(stubRequest, {}, { xfwd: true });
+      XHeaders(stubRequest, {}, { xfwd: true });
       expect(stubRequest.headers['x-forwarded-for']).toBe('192.168.1.2');
       expect(stubRequest.headers['x-forwarded-port']).toBe('8080');
       expect(stubRequest.headers['x-forwarded-proto']).toBe('http');

@@ -273,14 +273,3 @@ export function rewriteCookieProperty(
 export function hasPort(host: string) {
   return !!~host.indexOf(':');
 }
-
-export default {
-  isSSL,
-  setupOutgoing,
-  setupSocket,
-  getPort,
-  hasEncryptedConnection,
-  urlJoin,
-  rewriteCookieProperty,
-  hasPort,
-};

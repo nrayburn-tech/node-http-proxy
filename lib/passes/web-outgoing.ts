@@ -1,6 +1,6 @@
 import type { WebOutgoingPass } from '../index';
 import url from 'url';
-import common from '../common';
+import { rewriteCookieProperty } from '../common';
 
 const redirectRegex = /^201|30(1|2|7|8)$/;
 
@@ -87,18 +87,14 @@ export const writeHeaders: WebOutgoingPass = (req, res, proxyRes, options) => {
     setHeader = function (key: string, header: string | string[] | undefined) {
       if (header == undefined) return;
       if (rewriteCookieDomainConfig && key.toLowerCase() === 'set-cookie') {
-        header = common.rewriteCookieProperty(
+        header = rewriteCookieProperty(
           header,
           rewriteCookieDomainConfig,
           'domain',
         );
       }
       if (rewriteCookiePathConfig && key.toLowerCase() === 'set-cookie') {
-        header = common.rewriteCookieProperty(
-          header,
-          rewriteCookiePathConfig,
-          'path',
-        );
+        header = rewriteCookieProperty(header, rewriteCookiePathConfig, 'path');
       }
       res.setHeader(String(key).trim(), header!);
     };
@@ -147,10 +143,10 @@ export const writeStatusCode: WebOutgoingPass = (req, res, proxyRes) => {
   }
 };
 
-export default {
+export const webOutgoingPasses = [
   removeChunked,
   setConnection,
   setRedirectHostRewrite,
   writeHeaders,
   writeStatusCode,
-};
+];

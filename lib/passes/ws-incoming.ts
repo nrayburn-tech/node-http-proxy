@@ -1,7 +1,13 @@
 import * as http from 'http';
 import { IncomingHttpHeaders } from 'http';
 import * as https from 'https';
-import * as common from '../common';
+import {
+  getPort,
+  hasEncryptedConnection,
+  isSSL,
+  setupOutgoing,
+  setupSocket,
+} from '../common';
 import { WebSocketIncomingPass } from '../index';
 
 /*
@@ -45,8 +51,8 @@ export const XHeaders: WebSocketIncomingPass = (req, socket, options) => {
 
   const values = {
     for: req.connection.remoteAddress || req.socket.remoteAddress,
-    port: common.getPort(req),
-    proto: common.hasEncryptedConnection(req) ? 'wss' : 'ws',
+    port: getPort(req),
+    proto: hasEncryptedConnection(req) ? 'wss' : 'ws',
   };
 
   (['for', 'port', 'proto'] as const).forEach(function (header) {
@@ -97,13 +103,13 @@ export const stream: WebSocketIncomingPass = (
     );
   };
 
-  common.setupSocket(socket);
+  setupSocket(socket);
 
   if (head && head.length) socket.unshift(head);
 
-  const proxyReq = (
-    common.isSSL.test(options.target.protocol) ? https : http
-  ).request(common.setupOutgoing(options.ssl || {}, options, req));
+  const proxyReq = (isSSL.test(options.target.protocol) ? https : http).request(
+    setupOutgoing(options.ssl || {}, options, req),
+  );
 
   // Enable developers to modify the proxyReq before headers are sent
   if (server) {
@@ -145,7 +151,7 @@ export const stream: WebSocketIncomingPass = (
       proxySocket.end();
     });
 
-    common.setupSocket(proxySocket);
+    setupSocket(proxySocket);
 
     if (proxyHead && proxyHead.length) proxySocket.unshift(proxyHead);
 
@@ -175,8 +181,4 @@ export const stream: WebSocketIncomingPass = (
   }
 };
 
-export default {
-  checkMethodAndHeader,
-  XHeaders,
-  stream,
-};
+export const websocketIncomingPasses = [checkMethodAndHeader, XHeaders, stream];
