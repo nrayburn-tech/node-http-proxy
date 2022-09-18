@@ -150,8 +150,7 @@ function createWebProxy(options: ServerOptions): WebProxyHandler {
     });
 
     if (!finalOptions.target && !finalOptions.forward) {
-      this.emit('error', new Error('Must provide a proper URL as target'));
-      return;
+      throw new Error('Must provide a proper URL as target');
     }
 
     for (let i = 0; i < passes.length; i++) {
@@ -200,8 +199,7 @@ function createWebSocketProxy(options: ServerOptions): WebSocketProxyHandler {
     });
 
     if (!finalOptions.target && !finalOptions.forward) {
-      this.emit('error', new Error('Must provide a proper URL as target'));
-      return;
+      throw new Error('Must provide a proper URL as target');
     }
 
     for (let i = 0; i < passes.length; i++) {
