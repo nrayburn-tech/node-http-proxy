@@ -236,7 +236,7 @@ export class ProxyServerNew extends EE3 {
     }
   }
 
-  listen(port: number, hostname: string) {
+  listen(port: number, hostname?: string) {
     const closure = (req: IncomingMessage, res: ServerResponse) => {
       this.web(req, res);
     };
