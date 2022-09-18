@@ -16,18 +16,6 @@ import {
 import { ProxyTargetDetailed, ProxyTargetUrl, ServerOptions } from './types';
 import { Socket } from 'net';
 
-// Events
-export type EventNames =
-  | 'close'
-  | 'econnreset'
-  | 'end'
-  | 'error'
-  | 'proxyReq'
-  | 'proxyReqWs'
-  | 'proxyRes'
-  | 'open'
-  | 'start';
-
 // Web events
 export type WebEconnResetCallback = (
   err: Error,
@@ -221,7 +209,7 @@ function createWebSocketProxy(options: ServerOptions): WebSocketProxyHandler {
   };
 }
 
-export class ProxyServerNew extends EE3<EventNames | string> {
+export class ProxyServerNew extends EE3 {
   options: ServerOptions;
   web: WebProxyHandler;
   ws: WebSocketProxyHandler;
@@ -336,6 +324,67 @@ export class ProxyServerNew extends EE3<EventNames | string> {
     }
   }
 
+  emit(
+    event: 'close',
+    err: Error,
+    req: IncomingMessage,
+    res: Socket,
+    head: Buffer,
+  ): boolean;
+  emit(event: 'econnreset', listener: WebEconnResetCallback): boolean;
+  emit(
+    event: 'end',
+    err: Error,
+    req: IncomingMessage,
+    res: ServerResponse,
+    target: ProxyTargetUrl,
+  ): boolean;
+  emit(
+    event: 'error',
+    err: Error,
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: ResolvedServerOptions['target'],
+  ): boolean;
+  emit(
+    event: 'error',
+    err: Error,
+    req: IncomingMessage,
+    socket: Duplex,
+  ): boolean;
+  emit(
+    event: 'proxyReq',
+    proxyReq: ClientRequest,
+    req: IncomingMessage,
+    res: ServerResponse,
+    options: ResolvedServerOptions,
+  ): boolean;
+  emit(
+    event: 'proxyReqWs',
+    proxyReq: ClientRequest,
+    req: IncomingMessage,
+    socket: Socket,
+    options: ResolvedServerOptions,
+    head: Buffer,
+  ): boolean;
+  emit(
+    event: 'proxyRes',
+    proxyRes: IncomingMessage,
+    req: IncomingMessage,
+    res: ServerResponse,
+  ): boolean;
+  emit(event: 'open', socket: Socket): boolean;
+  emit(
+    event: 'start',
+    req: IncomingMessage,
+    res: ServerResponse,
+    target: ResolvedServerOptions['target'],
+  ): boolean;
+  emit(event: any, ...args: any[]): boolean;
+  emit(event: any, ...args: any[]) {
+    return super.emit(event, ...args);
+  }
+
   on(event: 'close', listener: WebSocketCloseCallback): this;
   on(event: 'econnreset', listener: WebEconnResetCallback): this;
   on(event: 'end', listener: WebEndCallback): this;
@@ -346,7 +395,8 @@ export class ProxyServerNew extends EE3<EventNames | string> {
   on(event: 'proxyRes', listener: WebResCallback): this;
   on(event: 'open', listener: WebSocketOpenCallback): this;
   on(event: 'start', listener: WebStartCallback): this;
-  on(event: string, listener: (...args: any[]) => void) {
+  on(event: any, listener: (...args: any[]) => void): this;
+  on(event: any, listener: (...args: any[]) => void) {
     super.on(event, listener);
     return this;
   }
@@ -361,7 +411,8 @@ export class ProxyServerNew extends EE3<EventNames | string> {
   once(event: 'proxyRes', listener: WebResCallback): this;
   once(event: 'open', listener: WebSocketOpenCallback): this;
   once(event: 'start', listener: WebStartCallback): this;
-  once(event: string, listener: (...args: any[]) => void) {
+  once(event: any, listener: (...args: any[]) => void): this;
+  once(event: any, listener: (...args: any[]) => void) {
     super.once(event, listener);
     return this;
   }
