@@ -51,7 +51,7 @@ server.sockets.on('connection', function (client) {
 //
 // Setup our server to proxy standard HTTP requests
 //
-const proxy = new httpProxy.createProxyServer({
+const proxy = new httpProxy.createProxy({
   target: {
     host: 'localhost',
     port: targetPort,

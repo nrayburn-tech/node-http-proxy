@@ -42,7 +42,7 @@ const addresses = [
     port: 80,
   },
 ];
-const proxy = httpProxy.createServer();
+const proxy = httpProxy.createProxy();
 
 http
   .createServer(function (req, res) {

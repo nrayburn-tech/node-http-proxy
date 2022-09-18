@@ -32,7 +32,7 @@ const proxyPort = getPort();
 //
 // Http Proxy Server with bad target
 //
-const proxy = httpProxy.createServer({
+const proxy = httpProxy.createProxy({
   target: 'http://localhost:' + targetPort,
 });
 

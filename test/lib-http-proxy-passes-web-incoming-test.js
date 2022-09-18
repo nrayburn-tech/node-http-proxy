@@ -1,5 +1,5 @@
 import { deleteLength, timeout, XHeaders } from '../lib/passes/web-incoming';
-import { createProxyServer } from '../lib';
+import { createProxy } from '../lib';
 import concat from 'concat-stream';
 import { parallel } from 'async';
 import { parse } from 'url';
@@ -76,9 +76,9 @@ describe('lib/http-proxy/passes/web-incoming.ts', () => {
   });
 });
 
-describe('#createProxyServer.web() using own http server', () => {
+describe('#createProxy.web() using own http server', () => {
   it('should proxy the request using the web proxy handler', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
     });
 
@@ -105,7 +105,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should detect a proxyReq event and modify headers', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8082',
     });
 
@@ -134,7 +134,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should skip proxyReq event when handling a request with header "expect: 100-continue" [https://www.npmjs.com/advisories/1486]', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
     });
 
@@ -179,7 +179,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy the request and handle error via callback', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
     });
 
@@ -209,7 +209,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy the request and handle error via event listener', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
     });
 
@@ -243,7 +243,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should forward the request and handle error via event listener', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       forward: 'http://127.0.0.1:8080',
     });
 
@@ -276,7 +276,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy the request and handle timeout error (proxyTimeout)', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:45000',
       proxyTimeout: 100,
     });
@@ -314,7 +314,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy the request and handle timeout error', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:45001',
       timeout: 100,
     });
@@ -362,7 +362,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy the request and provide a proxyRes event with the request and response parameters', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
     });
 
@@ -391,7 +391,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy the request and provide and respond to manual user response when using modifyResponse', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
       selfHandleResponse: true,
     });
@@ -437,7 +437,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy the request and handle changeOrigin option', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
       changeOrigin: true,
     });
@@ -464,7 +464,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy the request with the Authorization header set', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
       auth: 'user:pass',
     });
@@ -495,7 +495,7 @@ describe('#createProxyServer.web() using own http server', () => {
   });
 
   it('should proxy requests to multiple servers with different options', async () => {
-    const proxy = createProxyServer();
+    const proxy = createProxy();
 
     // proxies to two servers depending on url, rewriting the url as well
     // http://127.0.0.1:8080/s1/ -> http://127.0.0.1:8081/
@@ -546,7 +546,7 @@ describe('#createProxyServer.web() using own http server', () => {
 
 describe('#followRedirects', () => {
   it('should proxy the request follow redirects', async () => {
-    const proxy = createProxyServer({
+    const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
       followRedirects: true,
     });

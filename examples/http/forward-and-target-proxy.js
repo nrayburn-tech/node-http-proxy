@@ -35,7 +35,7 @@ const targetPortTwo = getPort();
 // Setup proxy server with forwarding
 //
 httpProxy
-  .createServer({
+  .createProxy({
     target: {
       port: targetPortOne,
       host: 'localhost',

@@ -49,7 +49,7 @@ const addresses = [
 //
 
 const proxies = addresses.map(function (target) {
-  return new httpProxy.createProxyServer({
+  return new httpProxy.createProxy({
     target: target,
   });
 });

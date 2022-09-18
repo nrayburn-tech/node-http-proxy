@@ -34,7 +34,7 @@ const proxyPort = getPort();
 // Basic Http Proxy Server
 //
 httpProxy
-  .createServer({
+  .createProxy({
     target: 'http://localhost:' + targetPort,
   })
   .listen(proxyPort);

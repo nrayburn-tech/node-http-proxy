@@ -1,4 +1,4 @@
-import { createProxyServer } from '../lib';
+import { createProxy } from '../lib';
 import { createServer, request } from 'http';
 import { connect } from 'net';
 import ws, { WebSocketServer } from 'ws';
@@ -22,11 +22,11 @@ Object.defineProperty(gen, 'port', {
 });
 
 describe('lib/http-proxy.js', () => {
-  describe('#createProxyServer', () => {
+  describe('#createProxy', () => {
     it.skip('should throw without options', function () {
       let error;
       try {
-        createProxyServer();
+        createProxy();
       } catch (e) {
         error = e;
       }
@@ -35,7 +35,7 @@ describe('lib/http-proxy.js', () => {
     });
 
     it('should return an object otherwise', () => {
-      const obj = createProxyServer({
+      const obj = createProxy({
         target: 'http://www.google.com:80',
       });
 
@@ -45,10 +45,10 @@ describe('lib/http-proxy.js', () => {
     });
   });
 
-  describe('#createProxyServer with forward options and using web-incoming passes', () => {
+  describe('#createProxy with forward options and using web-incoming passes', () => {
     it('should pipe the request using web-incoming#stream method', async () => {
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
         forward: 'http://127.0.0.1:' + ports.source,
       }).listen(ports.proxy);
 
@@ -69,10 +69,10 @@ describe('lib/http-proxy.js', () => {
     });
   });
 
-  describe('#createProxyServer using the web-incoming passes', () => {
+  describe('#createProxy using the web-incoming passes', () => {
     it('should proxy sse', async () => {
       const ports = { source: gen.port, proxy: gen.port },
-        proxy = createProxyServer({
+        proxy = createProxy({
           target: 'http://localhost:' + ports.source,
         }),
         proxyServer = proxy.listen(ports.proxy),
@@ -113,7 +113,7 @@ describe('lib/http-proxy.js', () => {
 
     it('should make the request on pipe and finish it', async () => {
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
         target: 'http://127.0.0.1:' + ports.source,
       }).listen(ports.proxy);
 
@@ -147,10 +147,10 @@ describe('lib/http-proxy.js', () => {
     });
   });
 
-  describe('#createProxyServer using the web-incoming passes', () => {
+  describe('#createProxy using the web-incoming passes', () => {
     it('should make the request, handle response and finish it', async () => {
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
         target: 'http://127.0.0.1:' + ports.source,
         preserveHeaderKeyCase: true,
       }).listen(ports.proxy);
@@ -195,10 +195,10 @@ describe('lib/http-proxy.js', () => {
     });
   });
 
-  describe('#createProxyServer() method with error response', () => {
+  describe('#createProxy() method with error response', () => {
     it('should make the request and emit the error event', async () => {
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
         target: 'http://127.0.0.1:' + ports.source,
       });
 
@@ -228,11 +228,11 @@ describe('lib/http-proxy.js', () => {
     });
   });
 
-  describe('#createProxyServer setting the correct timeout value', () => {
+  describe('#createProxy setting the correct timeout value', () => {
     it('should hang up the socket at the timeout', async () => {
       // this.timeout(30);
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
         target: 'http://127.0.0.1:' + ports.source,
         timeout: 3,
       }).listen(ports.proxy);
@@ -277,10 +277,10 @@ describe('lib/http-proxy.js', () => {
     });
   });
 
-  describe('#createProxyServer with xfwd option', () => {
+  describe('#createProxy with xfwd option', () => {
     it('should not throw on empty http host header', async () => {
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
         forward: 'http://127.0.0.1:' + ports.source,
         xfwd: true,
       }).listen(ports.proxy);
@@ -319,9 +319,9 @@ describe('lib/http-proxy.js', () => {
     });
   });
 
-  // describe('#createProxyServer using the web-incoming passes', function () {
+  // describe('#createProxy using the web-incoming passes', function () {
   //   it('should emit events correctly', function(done) {
-  //     var proxy = httpProxy.createProxyServer({
+  //     var proxy = httpProxy.createProxy({
   //       target: 'http://127.0.0.1:8080'
   //     }),
 
@@ -364,10 +364,10 @@ describe('lib/http-proxy.js', () => {
   //   });
   // });
 
-  describe('#createProxyServer using the ws-incoming passes', () => {
+  describe('#createProxy using the ws-incoming passes', () => {
     it('should proxy the websockets stream', async () => {
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
           target: 'ws://127.0.0.1:' + ports.source,
           ws: true,
         }),
@@ -399,7 +399,7 @@ describe('lib/http-proxy.js', () => {
 
     it('should emit error on proxy error', async () => {
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
           // note: we don't ever listen on this port
           target: 'ws://127.0.0.1:' + ports.source,
           ws: true,
@@ -448,7 +448,7 @@ describe('lib/http-proxy.js', () => {
       });
       server.listen(ports.source);
 
-      const proxy = createProxyServer({
+      const proxy = createProxy({
           // note: we don't ever listen on this port
           target: 'ws://127.0.0.1:' + ports.source,
           ws: true,
@@ -472,7 +472,7 @@ describe('lib/http-proxy.js', () => {
 
     it('should proxy a socket.io stream', async () => {
       const ports = { source: gen.port, proxy: gen.port },
-        proxy = createProxyServer({
+        proxy = createProxy({
           target: 'ws://127.0.0.1:' + ports.source,
           ws: true,
         }),
@@ -515,7 +515,7 @@ describe('lib/http-proxy.js', () => {
 
     it('should emit open and close events when socket.io client connects and disconnects', async () => {
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
         target: 'ws://127.0.0.1:' + ports.source,
         ws: true,
       });
@@ -552,7 +552,7 @@ describe('lib/http-proxy.js', () => {
     it('should pass all set-cookie headers to client', async () => {
       const serversClosed = new Promise((resolve) => {
         const ports = { source: gen.port, proxy: gen.port };
-        const proxy = createProxyServer({
+        const proxy = createProxy({
             target: 'ws://127.0.0.1:' + ports.source,
             ws: true,
           }),
@@ -600,7 +600,7 @@ describe('lib/http-proxy.js', () => {
     it('should detect a proxyReq event and modify headers', async () => {
       const ports = { source: gen.port, proxy: gen.port };
 
-      const proxy = createProxyServer({
+      const proxy = createProxy({
         target: 'ws://127.0.0.1:' + ports.source,
         ws: true,
       });
@@ -641,7 +641,7 @@ describe('lib/http-proxy.js', () => {
     it('should forward frames with single frame payload (including on node 4.x)', async () => {
       const payload = Array(65529).join('0');
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
           target: 'ws://127.0.0.1:' + ports.source,
           ws: true,
         }),
@@ -674,7 +674,7 @@ describe('lib/http-proxy.js', () => {
     it('should forward continuation frames with big payload (including on node 4.x)', async () => {
       const payload = Array(65530).join('0');
       const ports = { source: gen.port, proxy: gen.port };
-      const proxy = createProxyServer({
+      const proxy = createProxy({
           target: 'ws://127.0.0.1:' + ports.source,
           ws: true,
         }),

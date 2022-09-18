@@ -53,7 +53,7 @@ http.createServer(app).listen(proxyPort);
 //
 // Basic Http Proxy Server
 //
-const proxy = httpProxy.createProxyServer({
+const proxy = httpProxy.createProxy({
   target: 'http://localhost:' + targetPort,
 });
 

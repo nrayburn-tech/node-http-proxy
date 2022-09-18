@@ -33,7 +33,7 @@ const targetPort = getPort();
 //
 // HTTP Proxy Server
 //
-const proxy = httpProxy.createProxyServer({
+const proxy = httpProxy.createProxy({
   target: 'http://localhost:' + targetPort,
   ws: true,
 });

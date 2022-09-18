@@ -33,7 +33,7 @@ const proxyPort = getPort();
 // Create a HTTP Proxy server with a HTTPS target
 //
 httpProxy
-  .createProxyServer({
+  .createProxy({
     target: 'https://google.com',
     agent: https.globalAgent,
     headers: {

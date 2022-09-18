@@ -34,7 +34,7 @@ const targetPort = getPort();
 //
 // Basic Http Proxy Server
 //
-const proxy = new httpProxy.createProxyServer();
+const proxy = new httpProxy.createProxy();
 http
   .createServer(function (req, res) {
     proxy.web(req, res, {

@@ -1,4 +1,4 @@
-import { createProxyServer, createServer } from '../lib';
+import { createProxy } from '../lib';
 import http, { request } from 'http';
 import https from 'https';
 import { join } from 'path';
@@ -19,7 +19,7 @@ Object.defineProperty(gen, 'port', {
 });
 
 describe('lib/http-proxy.js', () => {
-  describe('HTTPS #createProxyServer', () => {
+  describe('HTTPS #createProxy', () => {
     describe('HTTPS to HTTP', () => {
       it('should proxy the request en send back the response', async () => {
         const ports = { source: gen.port, proxy: gen.port };
@@ -32,7 +32,7 @@ describe('lib/http-proxy.js', () => {
 
         source.listen(ports.source);
 
-        const proxy = createProxyServer({
+        const proxy = createProxy({
           target: 'http://127.0.0.1:' + ports.source,
           ssl: {
             key: readFileSync(join(__dirname, 'fixtures', 'agent2-key.pem')),
@@ -87,7 +87,7 @@ describe('lib/http-proxy.js', () => {
 
         source.listen(ports.source);
 
-        const proxy = createProxyServer({
+        const proxy = createProxy({
           target: 'https://127.0.0.1:' + ports.source,
           // Allow to use SSL self signed
           secure: false,
@@ -140,7 +140,7 @@ describe('lib/http-proxy.js', () => {
 
         source.listen(ports.source);
 
-        const proxy = createProxyServer({
+        const proxy = createProxy({
           target: 'https://127.0.0.1:' + ports.source,
           ssl: {
             key: readFileSync(join(__dirname, 'fixtures', 'agent2-key.pem')),
@@ -193,7 +193,7 @@ describe('lib/http-proxy.js', () => {
           })
           .listen(ports.source);
 
-        const proxy = createProxyServer({
+        const proxy = createProxy({
           target: 'https://127.0.0.1:' + ports.source,
           secure: true,
         });
@@ -239,7 +239,7 @@ describe('lib/http-proxy.js', () => {
 
         source.listen(ports.source);
 
-        const proxy = createServer({
+        const proxy = createProxy({
           agent: new http.Agent({ maxSockets: 2 }),
         });
 

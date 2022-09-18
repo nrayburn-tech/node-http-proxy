@@ -27,7 +27,7 @@ const http = require('http'),
   url = require('url');
 const { getPort } = require('../helpers/port');
 
-const proxy = httpProxy.createServer();
+const proxy = httpProxy.createProxy();
 
 const server = http
   .createServer(function (req, res) {

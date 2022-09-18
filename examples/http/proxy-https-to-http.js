@@ -49,7 +49,7 @@ http
 // Create the HTTPS proxy server listening on port 8000
 //
 httpProxy
-  .createServer({
+  .createProxy({
     target: {
       host: 'localhost',
       port: targetPort,

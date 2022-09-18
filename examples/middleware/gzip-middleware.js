@@ -35,7 +35,7 @@ const targetPort = getPort();
 // Basic Connect App
 //
 connect
-  .createServer(
+  .createProxy(
     connect.compress({
       // Pass to connect.compress() the options
       // that you need, just for show the example
@@ -51,7 +51,7 @@ connect
 //
 // Basic Http Proxy Server
 //
-const proxy = httpProxy.createProxyServer({
+const proxy = httpProxy.createProxy({
   target: 'http://localhost:' + targetPort,
 });
 

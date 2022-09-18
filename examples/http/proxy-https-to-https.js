@@ -52,7 +52,7 @@ https
 // Create the proxy server listening on port 8010
 //
 httpProxy
-  .createServer({
+  .createProxy({
     ssl: httpsOpts,
     target: 'https://localhost:' + targetPort,
     secure: false,

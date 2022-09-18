@@ -30,7 +30,7 @@ const http = require('http'),
   queryString = require('querystring'),
   bodyParser = require('body-parser'),
   httpProxy = require('../../lib'),
-  proxy = httpProxy.createProxyServer({});
+  proxy = httpProxy.createProxy({});
 const { getPort } = require('../helpers/port');
 
 //restream parsed body before proxying

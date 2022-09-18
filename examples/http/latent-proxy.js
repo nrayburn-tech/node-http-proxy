@@ -33,7 +33,7 @@ const targetPort = getPort();
 //
 // Http Proxy Server with Latency
 //
-const proxy = httpProxy.createProxyServer();
+const proxy = httpProxy.createProxy();
 http
   .createServer(function (req, res) {
     setTimeout(function () {

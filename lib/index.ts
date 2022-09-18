@@ -336,13 +336,13 @@ export function createProxy(options: ServerOptions) {
 }
 
 /**
- * @deprecated - Use {@link createProxyServer} instead.
- * @see {createProxyServer}
+ * @deprecated - Use {@link createProxy} instead.
+ * @see {createProxy}
  */
 export const createProxyServer = createProxy;
 
 /**
- * @deprecated - Use {@link createProxyServer} instead.
- * @see {createProxyServer}
+ * @deprecated - Use {@link createProxy} instead.
+ * @see {createProxy}
  */
 export const createServer = createProxy;
