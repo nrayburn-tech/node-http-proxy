@@ -57,6 +57,7 @@ export const setRedirectHostRewrite: WebOutgoingPass = (
 ) => {
   if (
     (options.hostRewrite || options.autoRewrite || options.protocolRewrite) &&
+    options.target &&
     proxyRes.headers['location'] &&
     proxyRes.statusCode &&
     redirectRegex.test(String(proxyRes.statusCode))
@@ -78,7 +79,7 @@ export const setRedirectHostRewrite: WebOutgoingPass = (
       u.protocol = options.protocolRewrite;
     }
 
-    proxyRes.headers['location'] = u.format();
+    proxyRes.headers['location'] = url.format(u);
   }
 };
 
@@ -89,8 +90,6 @@ export const setRedirectHostRewrite: WebOutgoingPass = (
  * @internal
  */
 export const writeHeaders: WebOutgoingPass = (req, res, proxyRes, options) => {
-  let rewriteCookieDomainConfig = options.cookieDomainRewrite,
-    rewriteCookiePathConfig = options.cookiePathRewrite;
   let rawHeaderKeyMap: Record<string, string> | undefined;
   const preserveHeaderKeyCase = options.preserveHeaderKeyCase,
     setHeader = function (key: string, header: string | string[] | undefined) {
@@ -108,15 +107,14 @@ export const writeHeaders: WebOutgoingPass = (req, res, proxyRes, options) => {
       res.setHeader(String(key).trim(), header!);
     };
 
-  if (typeof rewriteCookieDomainConfig === 'string') {
-    //also test for ''
-    rewriteCookieDomainConfig = { '*': rewriteCookieDomainConfig };
-  }
-
-  if (typeof rewriteCookiePathConfig === 'string') {
-    //also test for ''
-    rewriteCookiePathConfig = { '*': rewriteCookiePathConfig };
-  }
+  const rewriteCookieDomainConfig =
+    typeof options.cookieDomainRewrite === 'string'
+      ? { '*': options.cookieDomainRewrite }
+      : options.cookieDomainRewrite;
+  const rewriteCookiePathConfig =
+    typeof options.cookiePathRewrite === 'string'
+      ? { '*': options.cookiePathRewrite }
+      : options.cookiePathRewrite;
 
   // message.rawHeaders is added in: v0.11.6
   // https://nodejs.org/api/http.html#http_message_rawheaders

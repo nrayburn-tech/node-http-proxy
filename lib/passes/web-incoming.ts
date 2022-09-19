@@ -110,6 +110,8 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
     forwardReq.on('error', forwardError);
 
     (options.buffer || req).pipe(forwardReq);
+    // Early return if requests are only being forwarded.
+    // Otherwise, process the request to the target as well.
     if (!options.target) {
       return res.end();
     }
@@ -117,7 +119,7 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
 
   // Request initialization
   const proxyReq: httpNative.ClientRequest = (
-    options.target.protocol === 'https:' ? https : http
+    options.target?.protocol === 'https:' ? https : http
   ).request(setupOutgoing(options.ssl || {}, options, req));
 
   // Enable developers to modify the proxyReq before headers are sent

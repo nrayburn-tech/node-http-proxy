@@ -2,13 +2,13 @@
 import { ClientRequest, IncomingMessage, ServerResponse } from 'http';
 import { Duplex } from 'stream';
 import { Socket } from 'net';
-import { ProxyTargetUrl, ResolvedProxyServerOptions } from './proxyServer';
+import { ResolvedProxyServerOptions } from './proxyServer';
 
 export type WebEconnResetCallback = (
   err: Error,
   req: IncomingMessage,
   res: ServerResponse,
-  target: ProxyTargetUrl,
+  target: ResolvedProxyServerOptions['target'],
 ) => void;
 export type WebEndCallback = (
   req: IncomingMessage,
@@ -39,7 +39,6 @@ export type WebStartCallback = (
 ) => void;
 // Websocket events
 export type WebSocketCloseCallback = (
-  err: Error,
   req: IncomingMessage,
   res: Socket,
   head: Buffer,
@@ -57,3 +56,5 @@ export type WebSocketReqCallback = (
   head: Buffer,
 ) => void;
 export type WebSocketOpenCallback = (socket: Socket) => void;
+
+export type UnknownErrorCallback = (err: Error) => void;

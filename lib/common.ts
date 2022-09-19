@@ -10,7 +10,9 @@ const upgradeHeader = /(^|,)\s*upgrade\s*($|,)/i;
 /**
  * Simple Regex for testing if protocol is https
  */
-export const isSSL = /^https|wss/;
+export function isSSL(val?: string | null) {
+  return val && /^https|wss/.test(val);
+}
 
 /**
  * Copies the right headers from `options` and `req` to
@@ -38,9 +40,9 @@ export function setupOutgoing(
   req: IncomingMessage,
   forward?: 'forward' | 'target',
 ) {
-  outgoing.port =
-    options[forward || 'target'].port ||
-    (isSSL.test(options[forward || 'target'].protocol) ? 443 : 80);
+  // options['forward'] or options['target'] are tested and at least one exists at this point.
+  const target = options[forward || 'target']!;
+  outgoing.port = target.port || (isSSL(target.protocol) ? 443 : 80);
 
   (
     [
@@ -56,7 +58,8 @@ export function setupOutgoing(
       'secureProtocol',
     ] as const
   ).forEach(function (e) {
-    outgoing[e] = options[forward || 'target'][e];
+    // @ts-ignore -- Some properties won't exist on target[e], but it's fine to ignore.
+    outgoing[e] = target[e];
   });
 
   outgoing.method = options.method || req.method;
@@ -74,7 +77,7 @@ export function setupOutgoing(
     outgoing.ca = options.ssl.ca;
   }
 
-  if (isSSL.test(options[forward || 'target'].protocol)) {
+  if (isSSL(target.protocol)) {
     outgoing.rejectUnauthorized =
       typeof options.secure === 'undefined' ? true : options.secure;
   }
@@ -97,20 +100,15 @@ export function setupOutgoing(
   }
 
   // the final path is target path + relative path requested by user:
-  const target = options[forward || 'target'];
   const targetPath =
     target && options.prependPath !== false ? target.path || '' : '';
 
-  //
   // Remark: Can we somehow not use url.parse as a perf optimization?
-  //
   let outgoingPath = !options.toProxy ? url.parse(req.url).path || '' : req.url;
 
-  //
   // Remark: ignorePath will just straight up ignore whatever the request's
   // path is. This can be labeled as FOOT-GUN material if you do not know what
   // you are doing and are using conflicting options.
-  //
   outgoingPath = !options.ignorePath ? outgoingPath : '';
 
   outgoing.path = urlJoin(targetPath, outgoingPath);
@@ -120,8 +118,9 @@ export function setupOutgoing(
       outgoing.headers = {};
     }
     outgoing.headers.host =
-      required(outgoing.port, options[forward || 'target'].protocol) &&
-      !hasPort(outgoing.host)
+      target.protocol &&
+      required(outgoing.port, target.protocol) &&
+      !hasPort(outgoing.host || undefined)
         ? outgoing.host + ':' + outgoing.port
         : outgoing.host || undefined;
   }
@@ -270,6 +269,6 @@ export function rewriteCookieProperty(
  *
  * @internal
  */
-export function hasPort(host: string) {
-  return !!~host.indexOf(':');
+export function hasPort(host?: string) {
+  return host && !!~host.indexOf(':');
 }

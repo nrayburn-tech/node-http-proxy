@@ -19,6 +19,7 @@ import {
 } from 'http';
 import https from 'https';
 import {
+  UnknownErrorCallback,
   WebEconnResetCallback,
   WebEndCallback,
   WebErrorCallback,
@@ -236,12 +237,23 @@ export class ProxyServer extends EE3 {
 
   emit(
     event: 'close',
-    err: Error,
     req: IncomingMessage,
     res: Socket,
     head: Buffer,
   ): boolean;
-  emit(event: 'econnreset', listener: WebEconnResetCallback): boolean;
+  emit(
+    event: 'econnreset',
+    err: Error,
+    req: IncomingMessage,
+    res: ServerResponse,
+    target: ResolvedProxyServerOptions['target'],
+  ): boolean;
+  emit(
+    event: 'end',
+    req: IncomingMessage,
+    res: ServerResponse,
+    proxyRes: IncomingMessage,
+  ): boolean;
   emit(
     event: 'end',
     err: Error,
@@ -262,6 +274,7 @@ export class ProxyServer extends EE3 {
     req: IncomingMessage,
     socket: Duplex,
   ): boolean;
+  emit(event: 'error', err: Error): boolean;
   emit(
     event: 'proxyReq',
     proxyReq: ClientRequest,
@@ -290,7 +303,7 @@ export class ProxyServer extends EE3 {
     res: ServerResponse,
     target: ResolvedProxyServerOptions['target'],
   ): boolean;
-  emit(event: any, ...args: any[]): boolean;
+  // Doesn't have an `any` overload, so that all emits are typesafe.
   emit(event: any, ...args: any[]) {
     return super.emit(event, ...args);
   }
@@ -300,6 +313,7 @@ export class ProxyServer extends EE3 {
   on(event: 'end', listener: WebEndCallback): this;
   on(event: 'error', listener: WebErrorCallback): this;
   on(event: 'error', listener: WebSocketErrorCallback): this;
+  on(event: 'error', listener: UnknownErrorCallback): this;
   on(event: 'proxyReq', listener: WebReqCallback): this;
   on(event: 'proxyReqWs', listener: WebSocketReqCallback): this;
   on(event: 'proxyRes', listener: WebResCallback): this;
@@ -316,6 +330,7 @@ export class ProxyServer extends EE3 {
   once(event: 'end', listener: WebEndCallback): this;
   once(event: 'error', listener: WebErrorCallback): this;
   once(event: 'error', listener: WebSocketErrorCallback): this;
+  once(event: 'error', listener: UnknownErrorCallback): this;
   once(event: 'proxyReq', listener: WebReqCallback): this;
   once(event: 'proxyReqWs', listener: WebSocketReqCallback): this;
   once(event: 'proxyRes', listener: WebResCallback): this;

@@ -119,7 +119,7 @@ export const stream: WebSocketIncomingPass = (
 
   if (head && head.length) socket.unshift(head);
 
-  const proxyReq = (isSSL.test(options.target.protocol) ? https : http).request(
+  const proxyReq = (isSSL(options.target?.protocol) ? https : http).request(
     setupOutgoing(options.ssl || {}, options, req),
   );
 
@@ -179,7 +179,6 @@ export const stream: WebSocketIncomingPass = (
     proxySocket.pipe(socket).pipe(proxySocket);
 
     server.emit('open', proxySocket);
-    server.emit('proxySocket', proxySocket); //DEPRECATED.
   });
 
   return proxyReq.end(); // XXX: CHECK IF THIS IS THIS CORRECT
