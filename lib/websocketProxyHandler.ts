@@ -1,5 +1,4 @@
 import { IncomingMessage } from 'http';
-import { Socket } from 'net';
 import { WebSocketErrorCallback } from './eventCallbacks';
 import { parse as parse_url } from 'url';
 import {
@@ -7,6 +6,7 @@ import {
   ProxyServerOptions,
   ResolvedProxyServerOptions,
 } from './proxyServer';
+import { Duplex } from 'stream';
 
 /**
  * Used for proxying regular HTTP(S) requests
@@ -19,7 +19,7 @@ import {
 export type WebSocketProxyHandler = (
   this: ProxyServer,
   req: IncomingMessage,
-  socket: Socket,
+  socket: Duplex,
   head: Buffer,
   optionsOrCallback?: ProxyServerOptions | WebSocketErrorCallback,
   callback?: WebSocketErrorCallback,
@@ -36,7 +36,7 @@ export function createWebSocketProxyHandler(
   return function (
     this: ProxyServer,
     req: IncomingMessage,
-    socket: Socket,
+    socket: Duplex,
     head: Buffer,
     optionsOrCallback?: ProxyServerOptions | WebSocketErrorCallback,
     callback?: WebSocketErrorCallback,

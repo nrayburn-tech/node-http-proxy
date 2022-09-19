@@ -51,7 +51,7 @@ export type WebSocketErrorCallback = (
 export type WebSocketReqCallback = (
   proxyReq: ClientRequest,
   req: IncomingMessage,
-  socket: Socket,
+  socket: Duplex,
   options: ResolvedProxyServerOptions,
   head: Buffer,
 ) => void;

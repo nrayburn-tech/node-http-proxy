@@ -8,9 +8,9 @@ import {
   setupOutgoing,
   setupSocket,
 } from '../common';
-import { Socket } from 'net';
 import { WebSocketErrorCallback } from '../eventCallbacks';
 import { ProxyServer, ResolvedProxyServerOptions } from '../proxyServer';
+import { Duplex } from 'stream';
 
 /*
  * Array of passes.
@@ -28,7 +28,7 @@ import { ProxyServer, ResolvedProxyServerOptions } from '../proxyServer';
 export type WebSocketIncomingPass = (
   this: ProxyServer,
   req: IncomingMessage,
-  socket: Socket,
+  socket: Duplex,
   options: ResolvedProxyServerOptions,
   head: Buffer,
   server: ProxyServer,
@@ -114,8 +114,6 @@ export const stream: WebSocketIncomingPass = (
         .join('\r\n') + '\r\n\r\n'
     );
   };
-
-  setupSocket(socket);
 
   if (head && head.length) socket.unshift(head);
 

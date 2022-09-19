@@ -212,12 +212,9 @@ export class ProxyServer extends EE3 {
       : http.createServer(closure);
 
     if (this.options.ws) {
-      server.on(
-        'upgrade',
-        (req: IncomingMessage, socket: Socket, head: Buffer) => {
-          this.ws(req, socket, head);
-        },
-      );
+      server.on('upgrade', (req, socket, head) => {
+        this.ws(req, socket, head);
+      });
     }
 
     server.listen(port, hostname);
@@ -286,7 +283,7 @@ export class ProxyServer extends EE3 {
     event: 'proxyReqWs',
     proxyReq: ClientRequest,
     req: IncomingMessage,
-    socket: Socket,
+    socket: Duplex,
     options: ResolvedProxyServerOptions,
     head: Buffer,
   ): boolean;
