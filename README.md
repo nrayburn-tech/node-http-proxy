@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.github.com/http-party/node-http-proxy/main/doc/logo.png"/>
+  <img src="https://raw.github.com/nrayburn-tech/node-http-proxy/main/doc/logo.png"/>
 </p>
 
 # node-http-proxy [![Build Status](https://github.com/nrayburn-tech/node-http-proxy/actions/workflows/ci.yml/badge.svg?branch=main)]
@@ -534,7 +534,7 @@ Logo created by [Diego Pasquali](http://dribbble.com/diegopq)
 
 ### Contributing and Issues
 
-* Read carefully our [Code Of Conduct](https://github.com/http-party/node-http-proxy/blob/main/CODE_OF_CONDUCT.md)
+* Read carefully our [Code Of Conduct](https://github.com/nrayburn-tech/node-http-proxy/blob/main/CODE_OF_CONDUCT.md)
 * Search on Google/Github
 * If you can't find anything, open an issue
 * If you feel comfortable about fixing the issue, fork the repo
