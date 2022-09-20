@@ -1,5 +1,5 @@
-import { IncomingMessage, ServerResponse } from 'http';
-import { parse as parse_url } from 'url';
+import { IncomingMessage, ServerResponse } from 'node:http';
+import { parse as parse_url } from 'node:url';
 import { WebErrorCallback } from './eventCallbacks';
 import {
   ProxyServer,

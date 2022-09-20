@@ -1,8 +1,8 @@
-import * as url from 'url';
+import { Socket } from 'node:net';
+import * as url from 'node:url';
+import * as http from 'node:http';
+import * as https from 'node:https';
 import { default as required } from 'requires-port';
-import { Socket } from 'net';
-import { IncomingMessage } from 'http';
-import { RequestOptions } from 'https';
 import { ResolvedProxyServerOptions } from './proxyServer';
 
 const upgradeHeader = /(^|,)\s*upgrade\s*($|,)/i;
@@ -35,9 +35,9 @@ export function isSSL(val?: string | null) {
  */
 
 export function setupOutgoing(
-  outgoing: RequestOptions,
+  outgoing: https.RequestOptions,
   options: ResolvedProxyServerOptions,
-  req: IncomingMessage,
+  req: http.IncomingMessage,
   forward?: 'forward' | 'target',
 ) {
   // options['forward'] or options['target'] are tested and at least one exists at this point.
@@ -163,7 +163,7 @@ export function setupSocket(socket: Socket) {
  *
  * @internal
  */
-export function getPort(req: IncomingMessage) {
+export function getPort(req: http.IncomingMessage) {
   const res = req.headers.host ? req.headers.host.match(/:(\d+)/) : '';
 
   return res ? res[1] : hasEncryptedConnection(req) ? '443' : '80';
@@ -178,7 +178,7 @@ export function getPort(req: IncomingMessage) {
  *
  * @internal
  */
-export function hasEncryptedConnection(req: IncomingMessage) {
+export function hasEncryptedConnection(req: http.IncomingMessage) {
   // @ts-expect-error
   return Boolean(req.connection.encrypted || req.connection.pair);
 }

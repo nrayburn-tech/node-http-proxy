@@ -1,6 +1,6 @@
-import url from 'url';
+import { IncomingMessage, ServerResponse } from 'node:http';
+import url from 'node:url';
 import { rewriteCookieProperty } from '../common';
-import { IncomingMessage, ServerResponse } from 'http';
 import { ProxyServer, ResolvedProxyServerOptions } from '../proxyServer';
 
 const redirectRegex = /^201|30(1|2|7|8)$/;

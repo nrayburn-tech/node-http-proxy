@@ -1,23 +1,9 @@
-import url from 'url';
+import * as http from 'node:http';
+import * as https from 'node:https';
+import { Socket } from 'node:net';
+import * as stream from 'node:stream';
+import url from 'node:url';
 import EE3 from 'eventemitter3';
-import { createWebProxyHandler, WebProxyHandler } from './webProxyHandler';
-import {
-  createWebSocketProxyHandler,
-  WebSocketProxyHandler,
-} from './websocketProxyHandler';
-import { WebIncomingPass, webIncomingPasses } from './passes/web-incoming';
-import {
-  WebSocketIncomingPass,
-  websocketIncomingPasses,
-} from './passes/ws-incoming';
-import * as http from 'http';
-import {
-  ClientRequest,
-  IncomingMessage,
-  Server as HttpServer,
-  ServerResponse,
-} from 'http';
-import https from 'https';
 import {
   UnknownErrorCallback,
   WebEconnResetCallback,
@@ -31,9 +17,16 @@ import {
   WebSocketReqCallback,
   WebStartCallback,
 } from './eventCallbacks';
-import * as stream from 'stream';
-import { Duplex } from 'stream';
-import { Socket } from 'net';
+import { WebIncomingPass, webIncomingPasses } from './passes/web-incoming';
+import {
+  WebSocketIncomingPass,
+  websocketIncomingPasses,
+} from './passes/ws-incoming';
+import { createWebProxyHandler, WebProxyHandler } from './webProxyHandler';
+import {
+  createWebSocketProxyHandler,
+  WebSocketProxyHandler,
+} from './websocketProxyHandler';
 
 export interface ProxyTargetDetailed {
   host: string;
@@ -129,7 +122,7 @@ export class ProxyServer extends EE3 {
   webPasses: WebIncomingPass[];
   wsPasses: WebSocketIncomingPass[];
 
-  _server: HttpServer | undefined;
+  _server: http.Server | undefined;
 
   constructor(options: ProxyServerOptions) {
     super();
@@ -203,7 +196,7 @@ export class ProxyServer extends EE3 {
    * @param hostname - Hostname to listen on.
    */
   listen(port: number, hostname?: string) {
-    const closure = (req: IncomingMessage, res: ServerResponse) => {
+    const closure = (req: http.IncomingMessage, res: http.ServerResponse) => {
       this.web(req, res);
     };
 
@@ -234,70 +227,70 @@ export class ProxyServer extends EE3 {
 
   emit(
     event: 'close',
-    req: IncomingMessage,
+    req: http.IncomingMessage,
     res: Socket,
     head: Buffer,
   ): boolean;
   emit(
     event: 'econnreset',
     err: Error,
-    req: IncomingMessage,
-    res: ServerResponse,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
     target: ResolvedProxyServerOptions['target'],
   ): boolean;
   emit(
     event: 'end',
-    req: IncomingMessage,
-    res: ServerResponse,
-    proxyRes: IncomingMessage,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+    proxyRes: http.IncomingMessage,
   ): boolean;
   emit(
     event: 'end',
     err: Error,
-    req: IncomingMessage,
-    res: ServerResponse,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
     target: ProxyTargetUrl,
   ): boolean;
   emit(
     event: 'error',
     err: Error,
-    req: IncomingMessage,
-    res: ServerResponse,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
     url: ResolvedProxyServerOptions['target'],
   ): boolean;
   emit(
     event: 'error',
     err: Error,
-    req: IncomingMessage,
-    socket: Duplex,
+    req: http.IncomingMessage,
+    socket: stream.Duplex,
   ): boolean;
   emit(event: 'error', err: Error): boolean;
   emit(
     event: 'proxyReq',
-    proxyReq: ClientRequest,
-    req: IncomingMessage,
-    res: ServerResponse,
+    proxyReq: http.ClientRequest,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
     options: ResolvedProxyServerOptions,
   ): boolean;
   emit(
     event: 'proxyReqWs',
-    proxyReq: ClientRequest,
-    req: IncomingMessage,
-    socket: Duplex,
+    proxyReq: http.ClientRequest,
+    req: http.IncomingMessage,
+    socket: stream.Duplex,
     options: ResolvedProxyServerOptions,
     head: Buffer,
   ): boolean;
   emit(
     event: 'proxyRes',
-    proxyRes: IncomingMessage,
-    req: IncomingMessage,
-    res: ServerResponse,
+    proxyRes: http.IncomingMessage,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
   ): boolean;
   emit(event: 'open', socket: Socket): boolean;
   emit(
     event: 'start',
-    req: IncomingMessage,
-    res: ServerResponse,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
     target: ResolvedProxyServerOptions['target'],
   ): boolean;
   // Doesn't have an `any` overload, so that all emits are typesafe.

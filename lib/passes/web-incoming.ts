@@ -1,6 +1,5 @@
-import * as httpNative from 'http';
-import { IncomingMessage, ServerResponse } from 'http';
-import * as httpsNative from 'https';
+import * as httpNative from 'node:http';
+import * as httpsNative from 'node:https';
 import * as followRedirects from 'follow-redirects';
 import { webOutgoingPasses } from './web-outgoing';
 import { getPort, hasEncryptedConnection, setupOutgoing } from '../common';
@@ -19,8 +18,8 @@ const nativeAgents = { http: httpNative, https: httpsNative };
 
 export type WebIncomingPass = (
   this: ProxyServer,
-  req: IncomingMessage,
-  res: ServerResponse,
+  req: httpNative.IncomingMessage,
+  res: httpNative.ServerResponse,
   options: ResolvedProxyServerOptions,
   server: ProxyServer,
   errorCallback?: WebErrorCallback,

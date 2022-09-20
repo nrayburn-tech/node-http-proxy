@@ -1,6 +1,6 @@
-import * as http from 'http';
-import { IncomingHttpHeaders, IncomingMessage } from 'http';
-import * as https from 'https';
+import * as http from 'node:http';
+import * as https from 'node:https';
+import { Duplex } from 'node:stream';
 import {
   getPort,
   hasEncryptedConnection,
@@ -10,7 +10,6 @@ import {
 } from '../common';
 import { WebSocketErrorCallback } from '../eventCallbacks';
 import { ProxyServer, ResolvedProxyServerOptions } from '../proxyServer';
-import { Duplex } from 'stream';
 
 /*
  * Array of passes.
@@ -27,7 +26,7 @@ import { Duplex } from 'stream';
 
 export type WebSocketIncomingPass = (
   this: ProxyServer,
-  req: IncomingMessage,
+  req: http.IncomingMessage,
   socket: Duplex,
   options: ResolvedProxyServerOptions,
   head: Buffer,
@@ -91,7 +90,7 @@ export const stream: WebSocketIncomingPass = (
 ) => {
   const createHttpHeader = function (
     line: string,
-    headers: IncomingHttpHeaders,
+    headers: http.IncomingHttpHeaders,
   ) {
     return (
       Object.keys(headers)

@@ -1,9 +1,9 @@
-// Web events
-import { ClientRequest, IncomingMessage, ServerResponse } from 'http';
-import { Duplex } from 'stream';
-import { Socket } from 'net';
+import { ClientRequest, IncomingMessage, ServerResponse } from 'node:http';
+import { Socket } from 'node:net';
+import { Duplex } from 'node:stream';
 import { ResolvedProxyServerOptions } from './proxyServer';
 
+// Web events
 export type WebEconnResetCallback = (
   err: Error,
   req: IncomingMessage,

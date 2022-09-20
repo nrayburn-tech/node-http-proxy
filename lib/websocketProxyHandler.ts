@@ -1,12 +1,12 @@
-import { IncomingMessage } from 'http';
+import { IncomingMessage } from 'node:http';
+import { Duplex } from 'node:stream';
+import { parse as parse_url } from 'node:url';
 import { WebSocketErrorCallback } from './eventCallbacks';
-import { parse as parse_url } from 'url';
 import {
   ProxyServer,
   ProxyServerOptions,
   ResolvedProxyServerOptions,
 } from './proxyServer';
-import { Duplex } from 'stream';
 
 /**
  * Used for proxying regular HTTP(S) requests
