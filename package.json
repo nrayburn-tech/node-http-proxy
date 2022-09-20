@@ -15,8 +15,7 @@
     "build": "tsc -p ./tsconfig.build.json",
     "format": "prettier --write ./lib",
     "lint": "eslint --fix ./lib",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest run --coverage"
   },
   "dependencies": {
     "eventemitter3": "^4.0.0",
