@@ -6,13 +6,32 @@
     "type": "git",
     "url": "https://github.com/nrayburn-tech/node-http-proxy.git"
   },
+  "bugs": {
+    "url": "https://github.com/nrayburn-tech/node-http-proxy/issues"
+  },
+  "homepage": "https://github.com/nrayburn-tech/node-http-proxy/#readme",
   "license": "MIT",
-  "main": "dist/index.js",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc -p ./tsconfig.build.json",
+    "build": "tsup lib/index.ts --target node16 --format cjs,esm --dts --clean",
+    "watch": "npm run build -- --watch lib",
     "format": "prettier --write ./lib",
     "lint": "eslint --fix ./lib",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "eventemitter3": "^4.0.0",
@@ -35,6 +54,7 @@
     "socket.io": "^4.0.0",
     "socket.io-client": "^4.0.0",
     "sse": "0.0.8",
+    "tsup": "^6.2.3",
     "typescript": "^4.7.4",
     "vitest": "^0.23.2",
     "ws": "^8.0.0"
