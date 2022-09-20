@@ -62,7 +62,12 @@ export const setRedirectHostRewrite: WebOutgoingPass = (
     proxyRes.statusCode &&
     redirectRegex.test(String(proxyRes.statusCode))
   ) {
-    const target = url.parse(options.target);
+    const target =
+      // @ts-ignore -- url.Url is the legacy Url instance
+      options.target instanceof url.Url
+        ? options.target
+        : // @ts-ignore
+          url.parse(options.target);
     const u = url.parse(proxyRes.headers['location']);
 
     // make sure the redirected host matches the target host before rewriting

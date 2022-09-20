@@ -101,16 +101,19 @@ export function setupOutgoing(
 
   // the final path is target path + relative path requested by user:
   const targetPath =
+    // @ts-ignore
     target && options.prependPath !== false ? target.path || '' : '';
 
   // Remark: Can we somehow not use url.parse as a perf optimization?
-  let outgoingPath = !options.toProxy ? url.parse(req.url).path || '' : req.url;
+  let outgoingPath =
+    (!options.toProxy ? url.parse(req.url!).path : req.url) || '';
 
   // Remark: ignorePath will just straight up ignore whatever the request's
   // path is. This can be labeled as FOOT-GUN material if you do not know what
   // you are doing and are using conflicting options.
   outgoingPath = !options.ignorePath ? outgoingPath : '';
 
+  // @ts-ignore
   outgoing.path = urlJoin(targetPath, outgoingPath);
 
   if (options.changeOrigin) {

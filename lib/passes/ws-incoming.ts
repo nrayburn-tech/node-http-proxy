@@ -131,6 +131,7 @@ export const stream: WebSocketIncomingPass = (
   proxyReq.on('response', function (res) {
     // TODO: Does this actually do anything?  `upgrade` isn't on `res`.
     // if upgrade event isn't going to happen, close the socket
+    // @ts-ignore
     if (!res.upgrade) {
       socket.write(
         createHttpHeader(
