@@ -1,5 +1,5 @@
 {
-  "name": "http-proxy",
+  "name": "@nrayburn-tech/http-proxy",
   "version": "2.0.0-alpha.0",
   "description": "HTTP proxying for the masses",
   "repository": {
