@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://raw.github.com/nrayburn-tech/node-http-proxy/main/doc/logo.png"/>
+  <img src="https://raw.github.com/nrayburn-tech/http-proxy/main/doc/logo.png"/>
 </p>
 
-# node-http-proxy ![Build Status](https://github.com/nrayburn-tech/node-http-proxy/actions/workflows/ci.yml/badge.svg?branch=main)
+# http-proxy ![Build Status](https://github.com/nrayburn-tech/http-proxy/actions/workflows/ci.yml/badge.svg?branch=main)
 
-`node-http-proxy` is an HTTP programmable proxying library that supports
+`http-proxy` is an HTTP programmable proxying library that supports
 websockets. It is suitable for implementing components such as reverse
 proxies and load balancers.
 
@@ -29,11 +29,10 @@ proxies and load balancers.
   - [ProxyTable API](#proxytable-api)
   - [Logo](#logo)
 - [Contributing and Issues](#contributing-and-issues)
-- [License](#license)
 
 ### Installation
 
-`npm install http-proxy --save`
+`npm install @nrayburn-tech/http-proxy --save`
 
 **[Back to top](#table-of-contents)**
 
@@ -45,13 +44,15 @@ Click [here](UPGRADING.md)
 
 ### Core Concept
 
-A new proxy is created by calling `createProxyServer` and passing
-an `options` object as argument ([valid properties are available here](lib/http-proxy.js#L26-L42))
+A new proxy is created by calling `createProxy` and passing
+an `options` object as an argument ([valid properties are available here](lib/proxyServer.ts#L49-L110))
 
-```javascript
-var httpProxy = require('http-proxy');
+```typescript
+import { createProxy, ProxyServerOptions } from 'http-proxy';
 
-var proxy = httpProxy.createProxyServer(options); // See (†)
+const options: ProxyServerOptions = {};
+
+const proxy = createProxy(options); // See (†)
 ```
 
 †Unless listen(..) is invoked on the object, this does not create a webserver. See below.
@@ -60,14 +61,30 @@ An object will be returned with four methods:
 
 - web `req, res, [options]` (used for proxying regular HTTP(S) requests)
 - ws `req, socket, head, [options]` (used for proxying WS(S) requests)
-- listen `port` (a function that wraps the object in a webserver, for your convenience)
+- listen `port, [hostname]` (a function that wraps the object in a webserver, for your convenience)
 - close `[callback]` (a function that closes the inner webserver and stops listening on given port)
 
 It is then possible to proxy requests by calling these functions
 
-```javascript
-http.createServer(function (req, res) {
-  proxy.web(req, res, { target: 'http://mytarget.com:8080' });
+```typescript
+http.createServer(function (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+) {
+  proxy.web(req, res);
+});
+```
+
+It is also possible to pass in options for specific proxy calls, to override the options used when creating the proxy.
+
+```typescript
+http.createServer(function (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+) {
+  if (req.url.includes('/api/user')) {
+    proxy.web(req, res, { target: 'http://internal.api/user' });
+  }
 });
 ```
 
@@ -97,17 +114,14 @@ to the client.
 
 #### Setup a basic stand-alone proxy server
 
-```js
-var http = require('http'),
-  httpProxy = require('http-proxy');
-//
-// Create your proxy server and set the target in the options.
-//
-httpProxy.createProxyServer({ target: 'http://localhost:9000' }).listen(8000); // See (†)
+```typescript
+import * as http from 'http';
+import { createProxy } from 'http-proxy';
 
-//
+// Create your proxy server and set the target in the options.
+createProxy({ target: 'http://localhost:9000' }).listen(8000); // See (†)
+
 // Create your target server
-//
 http
   .createServer(function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -130,21 +144,20 @@ http
 This example shows how you can proxy a request using your own HTTP server
 and also you can put your own logic to handle the request.
 
-```js
-var http = require('http'),
-  httpProxy = require('http-proxy');
+```typescript
+import * as http from 'http';
+import { createProxy } from 'http-proxy';
 
-//
 // Create a proxy server with custom application logic
-//
-var proxy = httpProxy.createProxyServer({});
+const proxy = createProxy({});
 
-//
 // Create your custom server and just call `proxy.web()` to proxy
 // a web request to the target passed in the options
 // also you can use `proxy.ws()` to proxy a websockets request
-//
-var server = http.createServer(function (req, res) {
+const server = http.createServer(function (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+) {
   // You can define here your custom logic to handle the request
   // and then proxy the request.
   proxy.web(req, res, { target: 'http://127.0.0.1:5050' });
@@ -161,14 +174,12 @@ server.listen(5050);
 This example shows how you can proxy a request using your own HTTP server that
 modifies the outgoing proxy request by adding a special header.
 
-```js
-var http = require('http'),
-  httpProxy = require('http-proxy');
+```typescript
+import * as http from 'http';
+import { createProxy, ProxyServerOptions } from 'http-proxy';
 
-//
 // Create a proxy server with custom application logic
-//
-var proxy = httpProxy.createProxyServer({});
+const proxy = createProxy({});
 
 // To modify the proxy connection before data is sent, you can listen
 // for the 'proxyReq' event. When the event is fired, you will receive
@@ -177,12 +188,22 @@ var proxy = httpProxy.createProxyServer({});
 //  http.ServerResponse res, Object options). This mechanism is useful when
 // you need to modify the proxy request before the proxy connection
 // is made to the target.
-//
-proxy.on('proxyReq', function (proxyReq, req, res, options) {
-  proxyReq.setHeader('X-Special-Proxy-Header', 'foobar');
-});
+proxy.on(
+  'proxyReq',
+  function (
+    proxyReq: http.ClientRequest,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+    options: ProxyServerOptions,
+  ) {
+    proxyReq.setHeader('X-Special-Proxy-Header', 'foobar');
+  },
+);
 
-var server = http.createServer(function (req, res) {
+const server = http.createServer(function (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+) {
   // You can define here your custom logic to handle the request
   // and then proxy the request.
   proxy.web(req, res, {
@@ -190,8 +211,9 @@ var server = http.createServer(function (req, res) {
   });
 });
 
-console.log('listening on port 5050');
-server.listen(5050);
+server.listen(5050, () => {
+  console.log('listening on port 5050');
+});
 ```
 
 **[Back to top](#table-of-contents)**
@@ -207,18 +229,14 @@ Sometimes when you have received a HTML/XML document from the server of origin y
 #### Setup a stand-alone proxy server with latency
 
 ```js
-var http = require('http'),
-  httpProxy = require('http-proxy');
+import * as http from 'http';
+import { createProxy } from 'http-proxy';
 
-//
 // Create a proxy server with latency
-//
-var proxy = httpProxy.createProxyServer();
+var proxy = createProxy();
 
-//
 // Create your server that makes an operation that waits a while
 // and then proxies the request
-//
 http
   .createServer(function (req, res) {
     // This simulates an operation that takes 500ms to execute
@@ -230,9 +248,7 @@ http
   })
   .listen(8008);
 
-//
 // Create your target server
-//
 http
   .createServer(function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -256,59 +272,47 @@ You can activate the validation of a secure SSL certificate to the target connec
 ##### HTTPS -> HTTP
 
 ```js
-//
 // Create the HTTPS proxy server in front of a HTTP server
-//
-httpProxy
-  .createServer({
-    target: {
-      host: 'localhost',
-      port: 9009,
-    },
-    ssl: {
-      key: fs.readFileSync('valid-ssl-key.pem', 'utf8'),
-      cert: fs.readFileSync('valid-ssl-cert.pem', 'utf8'),
-    },
-  })
-  .listen(8009);
+createProxy({
+  target: {
+    host: 'localhost',
+    port: 9009,
+  },
+  ssl: {
+    key: fs.readFileSync('valid-ssl-key.pem', 'utf8'),
+    cert: fs.readFileSync('valid-ssl-cert.pem', 'utf8'),
+  },
+}).listen(8009);
 ```
 
 ##### HTTPS -> HTTPS
 
 ```js
-//
 // Create the proxy server listening on port 443
-//
-httpProxy
-  .createServer({
-    ssl: {
-      key: fs.readFileSync('valid-ssl-key.pem', 'utf8'),
-      cert: fs.readFileSync('valid-ssl-cert.pem', 'utf8'),
-    },
-    target: 'https://localhost:9010',
-    secure: true, // Depends on your needs, could be false.
-  })
-  .listen(443);
+createProxy({
+  ssl: {
+    key: fs.readFileSync('valid-ssl-key.pem', 'utf8'),
+    cert: fs.readFileSync('valid-ssl-cert.pem', 'utf8'),
+  },
+  target: 'https://localhost:9010',
+  secure: true, // Depends on your needs, could be false.
+}).listen(443);
 ```
 
 ##### HTTP -> HTTPS (using a PKCS12 client certificate)
 
 ```js
-//
 // Create an HTTP proxy server with an HTTPS target
-//
-httpProxy
-  .createProxyServer({
-    target: {
-      protocol: 'https:',
-      host: 'my-domain-name',
-      port: 443,
-      pfx: fs.readFileSync('path/to/certificate.p12'),
-      passphrase: 'password',
-    },
-    changeOrigin: true,
-  })
-  .listen(8000);
+createProxy({
+  target: {
+    protocol: 'https:',
+    host: 'my-domain-name',
+    port: 443,
+    pfx: fs.readFileSync('path/to/certificate.p12'),
+    passphrase: 'password',
+  },
+  changeOrigin: true,
+}).listen(8000);
 ```
 
 **[Back to top](#table-of-contents)**
@@ -318,37 +322,29 @@ httpProxy
 You can activate the websocket support for the proxy using `ws:true` in the options.
 
 ```js
-//
 // Create a proxy server for websockets
-//
-httpProxy
-  .createServer({
-    target: 'ws://localhost:9014',
-    ws: true,
-  })
-  .listen(8014);
+createProxy({
+  target: 'ws://localhost:9014',
+  ws: true,
+}).listen(8014);
 ```
 
-Also you can proxy the websocket requests just calling the `ws(req, socket, head)` method.
+Also, you can proxy the websocket requests just calling the `ws(req, socket, head)` method.
 
 ```js
-//
 // Setup our server to proxy standard HTTP requests
-//
-var proxy = new httpProxy.createProxyServer({
+const proxy = createProxy({
   target: {
     host: 'localhost',
     port: 9015,
   },
 });
-var proxyServer = http.createServer(function (req, res) {
+const proxyServer = http.createServer(function (req, res) {
   proxy.web(req, res);
 });
 
-//
 // Listen to the `upgrade` event and proxy the
 // WebSocket requests as well.
-//
 proxyServer.on('upgrade', function (req, socket, head) {
   proxy.ws(req, socket, head);
 });
@@ -360,7 +356,7 @@ proxyServer.listen(8015);
 
 ### Options
 
-`httpProxy.createProxyServer` supports the following options:
+`createProxy` supports the following options:
 
 - **target**: url string to be parsed with the url module
 - **forward**: url string to be parsed with the url module
@@ -449,18 +445,16 @@ If you are using the `proxyServer.listen` method, the following options are also
 - (DEPRECATED) `proxySocket`: Deprecated in favor of `open`.
 
 ```js
-var httpProxy = require('http-proxy');
+import { createProxy } from 'http-proxy';
 // Error example
-//
+
 // Http Proxy Server with bad target
-//
-var proxy = httpProxy.createServer({
+const proxy = createProxy({
   target: 'http://localhost:9005',
 });
 
 proxy.listen(8005);
 
-//
 // Listen for the `error` event on `proxy`.
 proxy.on('error', function (err, req, res) {
   res.writeHead(500, {
@@ -470,9 +464,7 @@ proxy.on('error', function (err, req, res) {
   res.end('Something went wrong. And we are reporting a custom error message.');
 });
 
-//
 // Listen for the `proxyRes` event on `proxy`.
-//
 proxy.on('proxyRes', function (proxyRes, req, res) {
   console.log(
     'RAW Response from the target',
@@ -480,17 +472,13 @@ proxy.on('proxyRes', function (proxyRes, req, res) {
   );
 });
 
-//
 // Listen for the `open` event on `proxy`.
-//
 proxy.on('open', function (proxySocket) {
   // listen for messages coming FROM the target here
   proxySocket.on('data', hybiParseAndLogMessage);
 });
 
-//
 // Listen for the `close` event on `proxy`.
-//
 proxy.on('close', function (res, socket, head) {
   // view disconnected websocket connections
   console.log('Client disconnected');
@@ -505,7 +493,7 @@ proxy.on('close', function (res, socket, head) {
 - This will stop the proxy from accepting new connections.
 
 ```js
-var proxy = new httpProxy.createProxyServer({
+const proxy = createProxy({
   target: {
     host: 'localhost',
     port: 1337,
@@ -527,22 +515,31 @@ data.
 
 ### Modify response
 
-```js
-var option = {
+```typescript
+import { ProxyServerOptions } from './proxyServer';
+
+const option: ProxyServerOptions = {
   target: target,
   selfHandleResponse: true,
 };
-proxy.on('proxyRes', function (proxyRes, req, res) {
-  var body = [];
-  proxyRes.on('data', function (chunk) {
-    body.push(chunk);
-  });
-  proxyRes.on('end', function () {
-    body = Buffer.concat(body).toString();
-    console.log('res from proxied server:', body);
-    res.end('my response to cli');
-  });
-});
+proxy.on(
+  'proxyRes',
+  function (
+    proxyRes: http.IncomingMessage,
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+  ) {
+    let body = [];
+    proxyRes.on('data', function (chunk) {
+      body.push(chunk);
+    });
+    proxyRes.on('end', function () {
+      body = Buffer.concat(body).toString();
+      console.log('res from proxied server:', body);
+      res.end('my response to cli');
+    });
+  },
+);
 proxy.web(req, res, option);
 ```
 
@@ -564,7 +561,7 @@ Logo created by [Diego Pasquali](http://dribbble.com/diegopq)
 
 ### Contributing and Issues
 
-- Read carefully our [Code Of Conduct](https://github.com/nrayburn-tech/node-http-proxy/blob/main/CODE_OF_CONDUCT.md)
+- Read carefully our [Code Of Conduct](https://github.com/nrayburn-tech/http-proxy/blob/main/CODE_OF_CONDUCT.md)
 - Search on Google/Github
 - If you can't find anything, open an issue
 - If you feel comfortable about fixing the issue, fork the repo
@@ -572,27 +569,3 @@ Logo created by [Diego Pasquali](http://dribbble.com/diegopq)
 - Submit your Pull Request (be sure to include tests and update documentation)
 
 **[Back to top](#table-of-contents)**
-
-### License
-
-> The MIT License (MIT)
->
-> Copyright (c) 2010 - 2016 Charlie Robbins, Jarrett Cruger & the Contributors.
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in
-> all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-> THE SOFTWARE.

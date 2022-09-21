@@ -1,6 +1,6 @@
-# Benchmarking `node-http-proxy`
+# Benchmarking `http-proxy`
 
-The long-term goal of these scripts and documentation is to provide a consistent and well understood benchmarking process for `node-http-proxy` so that performance does not degrade over time. They were initially created to compare the performance of `v0.10.3` and `v1.0.0` (which was a significant rewrite).
+The long-term goal of these scripts and documentation is to provide a consistent and well understood benchmarking process for `http-proxy` so that performance does not degrade over time. They were initially created to compare the performance of `v0.10.3` and `v1.0.0` (which was a significant rewrite).
 
 ## Pre-requisites
 

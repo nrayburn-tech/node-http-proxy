@@ -1,5 +1,5 @@
 /*
-  bodyDecoder-middleware.js: Basic example of `connect.bodyParser()` middleware in node-http-proxy
+  bodyDecoder-middleware.js: Basic example of `connect.bodyParser()` middleware in http-proxy
 
   Copyright (c) 2013 - 2016 Charlie Robbins, Jarrett Cruger & the Contributors.
 

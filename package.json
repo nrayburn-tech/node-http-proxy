@@ -4,12 +4,12 @@
   "description": "HTTP proxying for the masses",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nrayburn-tech/node-http-proxy.git"
+    "url": "https://github.com/nrayburn-tech/http-proxy.git"
   },
   "bugs": {
-    "url": "https://github.com/nrayburn-tech/node-http-proxy/issues"
+    "url": "https://github.com/nrayburn-tech/http-proxy/issues"
   },
-  "homepage": "https://github.com/nrayburn-tech/node-http-proxy/#readme",
+  "homepage": "https://github.com/nrayburn-tech/http-proxy/#readme",
   "license": "MIT",
   "sideEffects": false,
   "main": "./dist/index.js",

@@ -1,5 +1,5 @@
 /*
-  gzip-middleware.js: Basic example of `connect-gzip` middleware in node-http-proxy
+  gzip-middleware.js: Basic example of `connect-gzip` middleware in http-proxy
 
   Copyright (c) 2013 - 2016 Charlie Robbins, Jarrett Cruger & the Contributors.
 

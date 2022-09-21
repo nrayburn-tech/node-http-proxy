@@ -48,9 +48,7 @@ server.sockets.on('connection', function (client) {
   client.send('from server');
 });
 
-//
-// Create a proxy server with node-http-proxy
-//
+// Create a proxy server with http-proxy
 httpProxy
   .createProxy({ target: 'ws://localhost:' + targetPort, ws: true })
   .listen(proxyPort);
