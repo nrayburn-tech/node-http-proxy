@@ -157,7 +157,7 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
   proxyReq.on('error', proxyError);
 
   function createErrorHandler(
-    proxyReq: httpNative.ClientRequest,
+    errorReq: httpNative.ClientRequest,
     url: ResolvedProxyServerOptions['target'],
   ) {
     return function proxyError(err: Error) {
@@ -167,7 +167,7 @@ export const stream: WebIncomingPass = (req, res, options, server, clb) => {
         (err as Error & { code: string }).code === 'ECONNRESET'
       ) {
         server.emit('econnreset', err, req, res, url);
-        proxyReq.destroy();
+        errorReq.destroy();
         return;
       }
 
