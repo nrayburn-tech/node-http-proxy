@@ -25,7 +25,7 @@
 */
 
 const http = require('http'),
-  httpProxy = require('../../lib'),
+  httpProxy = require('../../dist'),
   SSE = require('sse');
 const { getPort } = require('../helpers/port');
 

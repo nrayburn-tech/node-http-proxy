@@ -1,4 +1,4 @@
-const httpProxy = require('../../lib');
+const httpProxy = require('../../dist');
 const Agent = require('agentkeepalive');
 const { getPort } = require('../helpers/port');
 
@@ -8,7 +8,7 @@ const agent = new Agent({
   maxFreeSockets: 10,
   keepAliveMsecs: 1000,
   timeout: 60000,
-  keepAliveTimeout: 30000, // free socket keepalive for 30 seconds
+  freeSocketTimeout: 30000, // free socket keepalive for 30 seconds
 });
 
 const proxy = httpProxy.createProxy({

@@ -27,7 +27,7 @@
 const http = require('http'),
   path = require('path'),
   fs = require('fs'),
-  httpProxy = require('../../lib'),
+  httpProxy = require('../../dist'),
   fixturesDir = path.join(__dirname, '..', '..', 'test', 'fixtures');
 const { getPort } = require('../helpers/port');
 

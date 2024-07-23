@@ -25,8 +25,9 @@
 */
 
 const http = require('http'),
+  compression = require('compression'),
   connect = require('connect'),
-  httpProxy = require('../../lib');
+  httpProxy = require('../../dist');
 const { getPort } = require('../helpers/port');
 
 const proxyPort = getPort();
@@ -34,19 +35,19 @@ const targetPort = getPort();
 //
 // Basic Connect App
 //
-connect
-  .createProxy(
-    connect.compress({
-      // Pass to connect.compress() the options
-      // that you need, just for show the example
-      // we use threshold to 1
-      threshold: 1,
-    }),
-    function (req, res) {
-      proxy.web(req, res);
-    },
-  )
-  .listen(proxyPort);
+const app = connect();
+app.use(
+  compression({
+    // Pass to compression() the options
+    // that you need, just for show the example
+    // we use threshold to 1
+    threshold: 1,
+  })
+);
+app.use(function (req, res) {
+  proxy.web(req, res);
+});
+http.createServer(app).listen(proxyPort);
 
 //
 // Basic Http Proxy Server

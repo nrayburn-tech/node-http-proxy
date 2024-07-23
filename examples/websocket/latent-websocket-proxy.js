@@ -26,7 +26,7 @@
 
 const util = require('util'),
   http = require('http'),
-  httpProxy = require('../../lib'),
+  httpProxy = require('../../dist'),
   io = require('socket.io'),
   client = require('socket.io-client');
 const { getPort } = require('../helpers/port');
@@ -37,7 +37,8 @@ const targetPort = getPort();
 // Create the target HTTP server and setup
 // socket.io on it.
 //
-const server = io.listen(targetPort);
+const server = new io.Server();
+server.listen(targetPort);
 server.sockets.on('connection', function (client) {
   util.debug('Got websocket connection');
 

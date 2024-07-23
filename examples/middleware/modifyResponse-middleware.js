@@ -27,7 +27,7 @@
 const http = require('http'),
   connect = require('connect'),
   app = connect(),
-  httpProxy = require('../../lib');
+  httpProxy = require('../../dist');
 const { getPort } = require('../helpers/port');
 
 const proxyPort = getPort();

@@ -25,7 +25,7 @@
 */
 
 const http = require('http'),
-  httpProxy = require('../../lib');
+  httpProxy = require('../../dist');
 const { getPort } = require('../helpers/port');
 
 const welcome = [
