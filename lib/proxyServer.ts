@@ -42,6 +42,7 @@ export interface ProxyTargetDetailed {
   ciphers?: string | undefined;
   secureProtocol?: string | undefined;
 }
+
 export type ProxyTargetUrl = string | Partial<url.Url>;
 
 export type ProxyTarget = ProxyTargetUrl | ProxyTargetDetailed;
@@ -126,6 +127,9 @@ export class ProxyServer extends EE3 {
 
   constructor(options: ProxyServerOptions) {
     super();
+    if (!options || Object.keys(options).length === 0) {
+      throw new Error('Options must not be empty.');
+    }
     options = options || {};
     options.prependPath = options.prependPath !== false;
 

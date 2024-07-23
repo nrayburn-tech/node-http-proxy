@@ -23,7 +23,7 @@ Object.defineProperty(gen, 'port', {
 
 describe('lib/http-proxy.js', () => {
   describe('#createProxy', () => {
-    it.skip('should throw without options', function () {
+    it('should throw without options', function () {
       let error;
       try {
         createProxy();

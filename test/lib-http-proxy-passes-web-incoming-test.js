@@ -495,7 +495,7 @@ describe('#createProxy.web() using own http server', () => {
   });
 
   it('should proxy requests to multiple servers with different options', async () => {
-    const proxy = createProxy();
+    const proxy = createProxy({target: 'http://ignored:8080'});
 
     // proxies to two servers depending on url, rewriting the url as well
     // http://127.0.0.1:8080/s1/ -> http://127.0.0.1:8081/
