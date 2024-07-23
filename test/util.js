@@ -15,11 +15,10 @@ export async function waitForClosed(...servers) {
       });
     });
 
-    // Throw after 15 seconds.
     setTimeout(() => {
       reject(
         `All servers have not finished closing.  Only ${count} out of ${servers.length} have closed.`,
       );
-    }, 1000 * 15);
+    }, 1000 * 5);
   });
 }
