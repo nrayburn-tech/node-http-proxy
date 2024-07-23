@@ -38,7 +38,7 @@ export function createWebProxyHandler(
     callback?: WebErrorCallback,
   ) {
     const requestOptions =
-      typeof optionsOrCallback === 'function' ? {} : optionsOrCallback ?? {};
+      typeof optionsOrCallback === 'function' ? {} : (optionsOrCallback ?? {});
     const errorCallback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : callback;
 
