@@ -34,7 +34,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "eventemitter3": "^4.0.0",
+    "eventemitter3": "^5.0.1",
     "follow-redirects": "^1.0.0",
     "requires-port": "^1.0.0"
   },
