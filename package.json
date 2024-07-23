@@ -40,11 +40,11 @@
   },
   "devDependencies": {
     "@types/follow-redirects": "^1.14.1",
-    "@types/node": "^18.0.0",
+    "@types/node": "^20.14.10",
     "@types/requires-port": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
-    "@vitest/coverage-c8": "^0.23.2",
+    "@vitest/coverage-v8": "^2.0.2",
     "async": "^3.0.0",
     "concat-stream": "^2.0.0",
     "eslint": "^8.21.0",
@@ -56,10 +56,10 @@
     "sse": "0.0.8",
     "tsup": "^6.2.3",
     "typescript": "^4.7.4",
-    "vitest": "^0.23.2",
+    "vitest": "^2.0.2",
     "ws": "^8.0.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   }
 }
