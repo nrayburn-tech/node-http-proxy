@@ -11,7 +11,7 @@ import { waitForClosed } from './util';
 // thanks to @3rd-Eden
 //
 let initialPort = 1024;
-const gen = {};
+const gen = {} as { port: Readonly<number> };
 Object.defineProperty(gen, 'port', {
   get: function get() {
     return initialPort++;
@@ -25,7 +25,7 @@ describe('lib/index.js', () => {
         const ports = { source: gen.port, proxy: gen.port };
         const source = http.createServer(function (req, res) {
           expect(req.method).toEqual('GET');
-          expect(req.headers.host.split(':')[1]).toEqual(String(ports.proxy));
+          expect(req.headers.host!.split(':')[1]).toEqual(String(ports.proxy));
           res.writeHead(200, { 'Content-Type': 'text/plain' });
           res.end('Hello from ' + ports.source);
         });
@@ -79,7 +79,9 @@ describe('lib/index.js', () => {
           },
           function (req, res) {
             expect(req.method).toEqual('GET');
-            expect(req.headers.host.split(':')[1]).toEqual(String(ports.proxy));
+            expect(req.headers.host!.split(':')[1]).toEqual(
+              String(ports.proxy),
+            );
             res.writeHead(200, { 'Content-Type': 'text/plain' });
             res.end('Hello from ' + ports.source);
           },
@@ -93,7 +95,7 @@ describe('lib/index.js', () => {
           secure: false,
         }).listen(ports.proxy);
 
-        const serversClosed = new Promise((resolve) => {
+        const serversClosed = new Promise<void>((resolve) => {
           request(
             {
               hostname: '127.0.0.1',
@@ -132,7 +134,9 @@ describe('lib/index.js', () => {
           },
           function (req, res) {
             expect(req.method).toEqual('GET');
-            expect(req.headers.host.split(':')[1]).toEqual(String(ports.proxy));
+            expect(req.headers.host!.split(':')[1]).toEqual(
+              String(ports.proxy),
+            );
             res.writeHead(200, { 'Content-Type': 'text/plain' });
             res.end('Hello from ' + ports.source);
           },
@@ -150,7 +154,7 @@ describe('lib/index.js', () => {
           secure: false,
         }).listen(ports.proxy);
 
-        const serversClosedPromise = new Promise((resolve) => {
+        const serversClosedPromise = new Promise<void>((resolve) => {
           https
             .request(
               {
@@ -200,7 +204,7 @@ describe('lib/index.js', () => {
 
         proxy.listen(ports.proxy);
 
-        const serversClosed = new Promise((resolve) => {
+        const serversClosed = new Promise<void>((resolve) => {
           proxy.on('error', function (err, req, res) {
             expect(err).toBeInstanceOf(Error);
             expect(err.toString()).toBe(
@@ -221,7 +225,7 @@ describe('lib/index.js', () => {
             port: ports.proxy,
             method: 'GET',
           },
-          (res) => {},
+          () => {},
         ).end();
 
         await serversClosed;
@@ -232,7 +236,7 @@ describe('lib/index.js', () => {
         const ports = { source: gen.port, proxy: gen.port };
         const source = http.createServer(function (req, res) {
           expect(req.method).toEqual('GET');
-          expect(req.headers.host.split(':')[1]).toEqual(String(ports.proxy));
+          expect(req.headers.host!.split(':')[1]).toEqual(String(ports.proxy));
           res.writeHead(200, { 'Content-Type': 'text/plain' });
           res.end('Hello from ' + ports.source);
         });
