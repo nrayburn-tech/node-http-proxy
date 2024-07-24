@@ -7,7 +7,7 @@ import { createServer, get, request } from 'http';
 import { describe, expect, it } from 'vitest';
 import { waitForClosed } from './util';
 
-describe('lib/http-proxy/passes/web-incoming.ts', () => {
+describe('lib/passes/web-incoming.ts', () => {
   describe('#deleteLength', () => {
     it('should change `content-length` for DELETE requests', () => {
       const stubRequest = {
@@ -159,7 +159,7 @@ describe('#createProxy.web() using own http server', () => {
           source.emit('request', req, res);
         }, 100);
       });
-    })
+    });
 
     proxyServer.listen('8081');
     source.listen('8080');
@@ -184,7 +184,7 @@ describe('#createProxy.web() using own http server', () => {
       hasContinue = true;
       req.write(postData);
       req.end();
-    })
+    });
 
     await waitForClosed(proxyServer, source);
 
@@ -508,7 +508,7 @@ describe('#createProxy.web() using own http server', () => {
   });
 
   it('should proxy requests to multiple servers with different options', async () => {
-    const proxy = createProxy({target: 'http://ignored:8080'});
+    const proxy = createProxy({ target: 'http://ignored:8080' });
 
     // proxies to two servers depending on url, rewriting the url as well
     // http://127.0.0.1:8080/s1/ -> http://127.0.0.1:8081/

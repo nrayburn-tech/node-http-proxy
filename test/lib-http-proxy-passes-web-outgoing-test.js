@@ -7,7 +7,7 @@ import {
 } from '../lib/passes/web-outgoing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-describe('lib/http-proxy/passes/web-outgoing.ts', () => {
+describe('lib/passes/web-outgoing.ts', () => {
   let testContext;
 
   beforeEach(() => {

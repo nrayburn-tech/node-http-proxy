@@ -1,7 +1,7 @@
 import { checkMethodAndHeader, XHeaders } from '../lib/passes/ws-incoming';
 import { describe, expect, it } from 'vitest';
 
-describe('lib/http-proxy/passes/ws-incoming.ts', () => {
+describe('lib/passes/ws-incoming.ts', () => {
   describe('#checkMethodAndHeader', () => {
     it('should drop non-GET connections', () => {
       let destroyCalled = false,

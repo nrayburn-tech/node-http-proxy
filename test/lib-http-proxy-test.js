@@ -21,14 +21,14 @@ Object.defineProperty(gen, 'port', {
   },
 });
 
-describe('lib/http-proxy.js', () => {
+describe('lib/index.js', () => {
   describe('#createProxy', () => {
     it('should not throw without options', function () {
       createProxy();
     });
     it('should throw with empty options', function () {
       createProxy({});
-    })
+    });
 
     it('should return an object otherwise', () => {
       const obj = createProxy({

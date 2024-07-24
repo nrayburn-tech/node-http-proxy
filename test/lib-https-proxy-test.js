@@ -18,7 +18,7 @@ Object.defineProperty(gen, 'port', {
   },
 });
 
-describe('lib/http-proxy.js', () => {
+describe('lib/index.js', () => {
   describe('HTTPS #createProxy', () => {
     describe('HTTPS to HTTP', () => {
       it('should proxy the request en send back the response', async () => {
