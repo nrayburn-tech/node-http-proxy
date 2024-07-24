@@ -40,7 +40,10 @@ export type WebSocketIncomingPass = (
  *
  * @internal
  */
-export const checkMethodAndHeader: WebSocketIncomingPass = (req, socket) => {
+export const checkMethodAndHeader = (
+  req: http.IncomingMessage,
+  socket: Duplex,
+) => {
   if (req.method !== 'GET' || !req.headers.upgrade) {
     socket.destroy();
     return true;
@@ -57,7 +60,11 @@ export const checkMethodAndHeader: WebSocketIncomingPass = (req, socket) => {
  *
  * @internal
  */
-export const XHeaders: WebSocketIncomingPass = (req, socket, options) => {
+export const XHeaders = (
+  req: http.IncomingMessage,
+  socket: Duplex,
+  options: ResolvedProxyServerOptions,
+) => {
   if (!options.xfwd) return;
 
   const values = {
@@ -80,13 +87,13 @@ export const XHeaders: WebSocketIncomingPass = (req, socket, options) => {
  *
  * @internal
  */
-export const stream: WebSocketIncomingPass = (
-  req,
-  socket,
-  options,
-  head,
-  server,
-  clb,
+export const stream = (
+  req: http.IncomingMessage,
+  socket: Duplex,
+  options: ResolvedProxyServerOptions,
+  head: Buffer,
+  server: ProxyServer,
+  errorCallback?: WebSocketErrorCallback,
 ) => {
   const createHttpHeader = function (
     line: string,
@@ -182,8 +189,8 @@ export const stream: WebSocketIncomingPass = (
   return proxyReq.end(); // XXX: CHECK IF THIS IS THIS CORRECT
 
   function onOutgoingError(err: Error) {
-    if (clb) {
-      clb(err, req, socket);
+    if (errorCallback) {
+      errorCallback(err, req, socket);
     } else {
       server.emit('error', err, req, socket);
     }
@@ -191,4 +198,8 @@ export const stream: WebSocketIncomingPass = (
   }
 };
 
-export const websocketIncomingPasses = [checkMethodAndHeader, XHeaders, stream];
+export const websocketIncomingPasses: WebSocketIncomingPass[] = [
+  checkMethodAndHeader,
+  XHeaders,
+  stream,
+];

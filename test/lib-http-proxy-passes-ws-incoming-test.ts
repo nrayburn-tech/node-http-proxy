@@ -1,11 +1,13 @@
 import { checkMethodAndHeader, XHeaders } from '../lib/passes/ws-incoming';
 import { describe, expect, it } from 'vitest';
+import http from 'node:http';
+import { Duplex } from 'node:stream';
 
 describe('lib/passes/ws-incoming.ts', () => {
   describe('#checkMethodAndHeader', () => {
     it('should drop non-GET connections', () => {
-      let destroyCalled = false,
-        stubRequest = {
+      let destroyCalled = false;
+      const stubRequest = {
           method: 'DELETE',
           headers: {},
         },
@@ -15,14 +17,17 @@ describe('lib/passes/ws-incoming.ts', () => {
             destroyCalled = true;
           },
         };
-      const returnValue = checkMethodAndHeader(stubRequest, stubSocket);
+      const returnValue = checkMethodAndHeader(
+        stubRequest as http.IncomingMessage,
+        stubSocket as Duplex,
+      );
       expect(returnValue).toBe(true);
       expect(destroyCalled).toBe(true);
     });
 
     it('should drop connections when no upgrade header', () => {
-      let destroyCalled = false,
-        stubRequest = {
+      let destroyCalled = false;
+      const stubRequest = {
           method: 'GET',
           headers: {},
         },
@@ -32,14 +37,17 @@ describe('lib/passes/ws-incoming.ts', () => {
             destroyCalled = true;
           },
         };
-      const returnValue = checkMethodAndHeader(stubRequest, stubSocket);
+      const returnValue = checkMethodAndHeader(
+        stubRequest as http.IncomingMessage,
+        stubSocket as Duplex,
+      );
       expect(returnValue).toBe(true);
       expect(destroyCalled).toBe(true);
     });
 
     it('should drop connections when upgrade header is different of `websocket`', () => {
-      let destroyCalled = false,
-        stubRequest = {
+      let destroyCalled = false;
+      const stubRequest = {
           method: 'GET',
           headers: {
             upgrade: 'anotherprotocol',
@@ -51,14 +59,17 @@ describe('lib/passes/ws-incoming.ts', () => {
             destroyCalled = true;
           },
         };
-      const returnValue = checkMethodAndHeader(stubRequest, stubSocket);
+      const returnValue = checkMethodAndHeader(
+        stubRequest as http.IncomingMessage,
+        stubSocket as Duplex,
+      );
       expect(returnValue).toBe(true);
       expect(destroyCalled).toBe(true);
     });
 
     it('should return nothing when all is ok', () => {
-      let destroyCalled = false,
-        stubRequest = {
+      let destroyCalled = false;
+      const stubRequest = {
           method: 'GET',
           headers: {
             upgrade: 'websocket',
@@ -70,7 +81,10 @@ describe('lib/passes/ws-incoming.ts', () => {
             destroyCalled = true;
           },
         };
-      const returnValue = checkMethodAndHeader(stubRequest, stubSocket);
+      const returnValue = checkMethodAndHeader(
+        stubRequest as http.IncomingMessage,
+        stubSocket as Duplex,
+      );
       expect(returnValue).toBe(undefined);
       expect(destroyCalled).toBe(false);
     });
@@ -78,7 +92,11 @@ describe('lib/passes/ws-incoming.ts', () => {
 
   describe('#XHeaders', () => {
     it('return if no forward request', () => {
-      const returnValue = XHeaders({}, {}, {});
+      const returnValue = XHeaders(
+        {} as http.IncomingMessage,
+        {} as Duplex,
+        {},
+      );
       expect(returnValue).toBe(undefined);
     });
 
@@ -91,8 +109,8 @@ describe('lib/passes/ws-incoming.ts', () => {
         headers: {
           host: '192.168.1.2:8080',
         },
-      };
-      XHeaders(stubRequest, {}, { xfwd: true });
+      } as unknown as http.IncomingMessage;
+      XHeaders(stubRequest, {} as Duplex, { xfwd: true });
       expect(stubRequest.headers['x-forwarded-for']).toBe('192.168.1.2');
       expect(stubRequest.headers['x-forwarded-port']).toBe('8080');
       expect(stubRequest.headers['x-forwarded-proto']).toBe('ws');
@@ -110,8 +128,8 @@ describe('lib/passes/ws-incoming.ts', () => {
         headers: {
           host: '192.168.1.3:8181',
         },
-      };
-      XHeaders(stubRequest, {}, { xfwd: true });
+      } as unknown as http.IncomingMessage;
+      XHeaders(stubRequest, {} as Duplex, { xfwd: true });
       expect(stubRequest.headers['x-forwarded-for']).toBe('192.168.1.3');
       expect(stubRequest.headers['x-forwarded-port']).toBe('8181');
       expect(stubRequest.headers['x-forwarded-proto']).toBe('wss');
