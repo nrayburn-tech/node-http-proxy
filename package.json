@@ -28,8 +28,8 @@
   "scripts": {
     "build": "tsup lib/index.ts --target node16 --format cjs,esm --dts --clean",
     "examples": "node examples/runner.js",
-    "format": "prettier --write ./lib",
-    "lint": "eslint --fix ./lib",
+    "format": "prettier --write ./lib ./examples",
+    "lint": "eslint --fix ./lib ./examples",
     "test": "vitest run --coverage",
     "prepublishOnly": "npm run build"
   },

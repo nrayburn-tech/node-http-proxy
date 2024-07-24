@@ -62,7 +62,7 @@ const targetPort = getPort();
 //
 const app = connect()
   .use(bodyParser.json()) //json parser
-  .use(bodyParser.urlencoded({extended: true})) //urlencoded parser
+  .use(bodyParser.urlencoded({ extended: true })) //urlencoded parser
   .use(function (req, res) {
     // modify body here,
     // eg: req.body = {a: 1}.
@@ -93,13 +93,16 @@ http.createServer(app1).listen(targetPort, function () {
   fetch('http://127.0.0.1:' + proxyPort, {
     method: 'POST',
     body: JSON.stringify({ content: 123, type: 'greeting from json request' }),
-  }).then((response) => {
-    return response.text();
-  }).then((data => {
-    console.log('return for json request:', data);
-  })).catch((err => {
-    console.error(err);
-  }));
+  })
+    .then((response) => {
+      return response.text();
+    })
+    .then((data) => {
+      console.log('return for json request:', data);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 
   // application/x-www-form-urlencoded request
   fetch('http://127.0.0.1:' + proxyPort, {
@@ -108,11 +111,14 @@ http.createServer(app1).listen(targetPort, function () {
       content: 123,
       type: 'greeting from urlencoded request',
     }),
-  }).then((response) => {
-    return response.text();
-  }).then((data) => {
-    console.log('return for urlencoded request:', data);
-  }).catch((err => {
-    console.error(err);
-  }));
+  })
+    .then((response) => {
+      return response.text();
+    })
+    .then((data) => {
+      console.log('return for urlencoded request:', data);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 });

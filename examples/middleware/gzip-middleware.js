@@ -42,7 +42,7 @@ app.use(
     // that you need, just for show the example
     // we use threshold to 1
     threshold: 1,
-  })
+  }),
 );
 app.use(function (req, res) {
   proxy.web(req, res);
