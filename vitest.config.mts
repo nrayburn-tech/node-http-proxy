@@ -8,7 +8,7 @@ export default defineConfig({
       reporter: ['text'],
     },
     globals: false,
-    include: ['test/*-test.js'],
+    include: ['test/*-test.[jt]s'],
     testTimeout: 1000,
   },
 });
