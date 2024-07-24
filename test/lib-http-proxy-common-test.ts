@@ -1,11 +1,15 @@
 import { setupOutgoing, setupSocket } from '../lib/common';
 import { parse } from 'url';
 import { describe, expect, it } from 'vitest';
+import https from 'https';
+import { Socket } from 'node:net';
+import http from 'node:http';
+import { ResolvedProxyServerOptions } from '../lib/proxyServer';
 
 describe('lib/common.ts', () => {
   describe('#setupOutgoing', () => {
     it('should setup the correct headers', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -19,12 +23,12 @@ describe('lib/common.ts', () => {
           headers: { fizz: 'bang', overwritten: true },
           localAddress: 'local.address',
           auth: 'username:pass',
-        },
+        } as unknown as ResolvedProxyServerOptions,
         {
           method: 'i',
           url: 'am',
           headers: { pro: 'xy', overwritten: false },
-        },
+        } as unknown as http.IncomingMessage,
       );
 
       expect(outgoing.host).toEqual('hey');
@@ -36,15 +40,15 @@ describe('lib/common.ts', () => {
       expect(outgoing.method).toEqual('i');
       expect(outgoing.path).toEqual('am');
 
-      expect(outgoing.headers.pro).toEqual('xy');
-      expect(outgoing.headers.fizz).toEqual('bang');
-      expect(outgoing.headers.overwritten).toEqual(true);
+      expect(outgoing.headers?.pro).toEqual('xy');
+      expect(outgoing.headers?.fizz).toEqual('bang');
+      expect(outgoing.headers?.overwritten).toEqual(true);
       expect(outgoing.localAddress).toEqual('local.address');
       expect(outgoing.auth).toEqual('username:pass');
     });
 
     it('should not override agentless upgrade header', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -61,13 +65,13 @@ describe('lib/common.ts', () => {
           method: 'i',
           url: 'am',
           headers: { pro: 'xy', overwritten: false },
-        },
+        } as unknown as http.IncomingMessage,
       );
-      expect(outgoing.headers.connection).toEqual('upgrade');
+      expect(outgoing.headers?.connection).toEqual('upgrade');
     });
 
     it('should not override agentless connection: contains upgrade', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -84,14 +88,14 @@ describe('lib/common.ts', () => {
           method: 'i',
           url: 'am',
           headers: { pro: 'xy', overwritten: false },
-        },
+        } as unknown as http.IncomingMessage,
       );
-      expect(outgoing.headers.connection).toEqual('keep-alive, upgrade');
+      expect(outgoing.headers?.connection).toEqual('keep-alive, upgrade');
     });
 
     it('should override agentless connection: contains improper upgrade', () => {
       // sanity check on upgrade regex
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -108,13 +112,13 @@ describe('lib/common.ts', () => {
           method: 'i',
           url: 'am',
           headers: { pro: 'xy', overwritten: false },
-        },
+        } as unknown as http.IncomingMessage,
       );
-      expect(outgoing.headers.connection).toEqual('close');
+      expect(outgoing.headers?.connection).toEqual('close');
     });
 
     it('should override agentless non-upgrade header to close', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -131,19 +135,23 @@ describe('lib/common.ts', () => {
           method: 'i',
           url: 'am',
           headers: { pro: 'xy', overwritten: false },
-        },
+        } as unknown as http.IncomingMessage,
       );
-      expect(outgoing.headers.connection).toEqual('close');
+      expect(outgoing.headers?.connection).toEqual('close');
     });
 
     it('should set the agent to false if none is given', () => {
-      const outgoing = {};
-      setupOutgoing(outgoing, { target: 'http://localhost' }, { url: '/' });
+      const outgoing: https.RequestOptions = {};
+      setupOutgoing(
+        outgoing,
+        { target: 'http://localhost' } as unknown as ResolvedProxyServerOptions,
+        { url: '/' } as http.IncomingMessage,
+      );
       expect(outgoing.agent).toEqual(false);
     });
 
     it('set the port according to the protocol', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -159,7 +167,7 @@ describe('lib/common.ts', () => {
           method: 'i',
           url: 'am',
           headers: { pro: 'xy' },
-        },
+        } as unknown as http.IncomingMessage,
       );
 
       expect(outgoing.host).toEqual('how');
@@ -169,20 +177,22 @@ describe('lib/common.ts', () => {
 
       expect(outgoing.method).toEqual('i');
       expect(outgoing.path).toEqual('am');
-      expect(outgoing.headers.pro).toEqual('xy');
+      expect(outgoing.headers?.pro).toEqual('xy');
 
       expect(outgoing.port).toEqual(443);
     });
 
     it('should keep the original target path in the outgoing path', () => {
-      const outgoing = {};
-      setupOutgoing(outgoing, { target: { path: 'some-path' } }, { url: 'am' });
+      const outgoing: https.RequestOptions = {};
+      setupOutgoing(outgoing, { target: { path: 'some-path' } }, {
+        url: 'am',
+      } as http.IncomingMessage);
 
       expect(outgoing.path).toEqual('some-path/am');
     });
 
     it('should keep the original forward path in the outgoing path', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -193,7 +203,7 @@ describe('lib/common.ts', () => {
         },
         {
           url: 'am',
-        },
+        } as http.IncomingMessage,
         'forward',
       );
 
@@ -201,7 +211,7 @@ describe('lib/common.ts', () => {
     });
 
     it('should properly detect https/wss protocol without the colon', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -210,47 +220,49 @@ describe('lib/common.ts', () => {
             host: 'whatever.com',
           },
         },
-        { url: '/' },
+        { url: '/' } as http.IncomingMessage,
       );
 
       expect(outgoing.port).toEqual(443);
     });
 
     it('should not prepend the target path to the outgoing path with prependPath = false', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
           target: { path: 'hellothere' },
           prependPath: false,
         },
-        { url: 'hi' },
+        { url: 'hi' } as http.IncomingMessage,
       );
 
       expect(outgoing.path).toEqual('hi');
     });
 
     it('should properly join paths', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
           target: { path: '/forward' },
         },
-        { url: '/static/path' },
+        { url: '/static/path' } as http.IncomingMessage,
       );
 
       expect(outgoing.path).toEqual('/forward/static/path');
     });
 
     it('should not modify the query string', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
           target: { path: '/forward' },
         },
-        { url: '/?foo=bar//&target=http://foobar.com/?a=1%26b=2&other=2' },
+        {
+          url: '/?foo=bar//&target=http://foobar.com/?a=1%26b=2&other=2',
+        } as http.IncomingMessage,
       );
 
       expect(outgoing.path).toEqual(
@@ -262,7 +274,7 @@ describe('lib/common.ts', () => {
     // This is the proper failing test case for the common.join problem
     //
     it('should correctly format the toProxy URL', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       const google = 'https://google.com';
       setupOutgoing(
         outgoing,
@@ -270,14 +282,14 @@ describe('lib/common.ts', () => {
           target: parse('http://sometarget.com:80'),
           toProxy: true,
         },
-        { url: google },
+        { url: google } as http.IncomingMessage,
       );
 
       expect(outgoing.path).toEqual('/' + google);
     });
 
     it('should not replace : to :\\ when no https word before', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       const google = 'https://google.com:/join/join.js';
       setupOutgoing(
         outgoing,
@@ -285,14 +297,14 @@ describe('lib/common.ts', () => {
           target: parse('http://sometarget.com:80'),
           toProxy: true,
         },
-        { url: google },
+        { url: google } as http.IncomingMessage,
       );
 
       expect(outgoing.path).toEqual('/' + google);
     });
 
     it('should not replace : to :\\ when no http word before', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       const google = 'http://google.com:/join/join.js';
       setupOutgoing(
         outgoing,
@@ -300,7 +312,7 @@ describe('lib/common.ts', () => {
           target: parse('http://sometarget.com:80'),
           toProxy: true,
         },
-        { url: google },
+        { url: google } as http.IncomingMessage,
       );
 
       expect(outgoing.path).toEqual('/' + google);
@@ -308,7 +320,7 @@ describe('lib/common.ts', () => {
 
     describe('when using ignorePath', () => {
       it('should ignore the path of the `req.url` passed in but use the target path', () => {
-        const outgoing = {};
+        const outgoing: https.RequestOptions = {};
         const myEndpoint = 'https://whatever.com/some/crazy/path/whoooo';
         setupOutgoing(
           outgoing,
@@ -316,14 +328,14 @@ describe('lib/common.ts', () => {
             target: parse(myEndpoint),
             ignorePath: true,
           },
-          { url: '/more/crazy/pathness' },
+          { url: '/more/crazy/pathness' } as http.IncomingMessage,
         );
 
         expect(outgoing.path).toEqual('/some/crazy/path/whoooo');
       });
 
       it('and prependPath: false, it should ignore path of target and incoming request', () => {
-        const outgoing = {};
+        const outgoing: https.RequestOptions = {};
         const myEndpoint = 'https://whatever.com/some/crazy/path/whoooo';
         setupOutgoing(
           outgoing,
@@ -332,7 +344,7 @@ describe('lib/common.ts', () => {
             ignorePath: true,
             prependPath: false,
           },
-          { url: '/more/crazy/pathness' },
+          { url: '/more/crazy/pathness' } as http.IncomingMessage,
         );
 
         expect(outgoing.path).toEqual('');
@@ -341,7 +353,7 @@ describe('lib/common.ts', () => {
 
     describe('when using changeOrigin', () => {
       it('should correctly set the port to the host when it is a non-standard port using url.parse', () => {
-        const outgoing = {};
+        const outgoing: https.RequestOptions = {};
         const myEndpoint = 'https://myCouch.com:6984';
         setupOutgoing(
           outgoing,
@@ -349,14 +361,14 @@ describe('lib/common.ts', () => {
             target: parse(myEndpoint),
             changeOrigin: true,
           },
-          { url: '/' },
+          { url: '/' } as http.IncomingMessage,
         );
 
-        expect(outgoing.headers.host).toEqual('mycouch.com:6984');
+        expect(outgoing.headers?.host).toEqual('mycouch.com:6984');
       });
 
       it('should correctly set the port to the host when it is a non-standard port when setting host and port manually (which ignores port)', () => {
-        const outgoing = {};
+        const outgoing: https.RequestOptions = {};
         setupOutgoing(
           outgoing,
           {
@@ -367,14 +379,14 @@ describe('lib/common.ts', () => {
             },
             changeOrigin: true,
           },
-          { url: '/' },
+          { url: '/' } as http.IncomingMessage,
         );
-        expect(outgoing.headers.host).toEqual('mycouch.com:6984');
+        expect(outgoing.headers?.host).toEqual('mycouch.com:6984');
       });
     });
 
     it('should pass through https client parameters', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
@@ -396,7 +408,7 @@ describe('lib/common.ts', () => {
         {
           method: 'i',
           url: 'am',
-        },
+        } as http.IncomingMessage,
       );
 
       expect(outgoing.pfx).toEqual('my-pfx');
@@ -409,14 +421,14 @@ describe('lib/common.ts', () => {
     });
 
     it('should handle overriding the `method` of the http request', () => {
-      const outgoing = {};
+      const outgoing: https.RequestOptions = {};
       setupOutgoing(
         outgoing,
         {
           target: parse('https://whooooo.com'),
           method: 'POST',
         },
-        { method: 'GET', url: '' },
+        { method: 'GET', url: '' } as http.IncomingMessage,
       );
 
       expect(outgoing.method).toEqual('POST');
@@ -424,8 +436,10 @@ describe('lib/common.ts', () => {
 
     // url.parse('').path => null
     it('should not pass null as last arg to #urlJoin', () => {
-      const outgoing = {};
-      setupOutgoing(outgoing, { target: { path: '' } }, { url: '' });
+      const outgoing: https.RequestOptions = {};
+      setupOutgoing(outgoing, { target: { path: '' } }, {
+        url: '',
+      } as http.IncomingMessage);
 
       expect(outgoing.path).toBe('');
     });
@@ -433,7 +447,11 @@ describe('lib/common.ts', () => {
 
   describe('#setupSocket', () => {
     it('should setup a socket', () => {
-      const socketConfig = {
+      const socketConfig: {
+          timeout: number | null;
+          nodelay: boolean | undefined;
+          keepalive: boolean | undefined;
+        } = {
           timeout: null,
           nodelay: false,
           keepalive: false,
@@ -448,7 +466,7 @@ describe('lib/common.ts', () => {
           setKeepAlive: function (bol) {
             socketConfig.keepalive = bol;
           },
-        };
+        } as Socket;
       setupSocket(stubSocket);
 
       expect(socketConfig.timeout).toEqual(0);
