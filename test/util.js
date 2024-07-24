@@ -5,19 +5,20 @@
  */
 export async function waitForClosed(...servers) {
   return new Promise((resolve, reject) => {
-    let count = 0;
+    const openServers = new Set(servers);
     servers.forEach((server) => {
       server.addListener('close', () => {
-        count++;
-        if (count === servers.length) {
+        openServers.delete(server);
+        if (openServers.size === 0) {
           resolve();
         }
       });
     });
 
     setTimeout(() => {
+      console.log('Open Servers:', openServers);
       reject(
-        `All servers have not finished closing.  Only ${count} out of ${servers.length} have closed.`,
+        `All servers have not finished closing. ${openServers.size} are still not closed.`,
       );
     }, 1000 * 5);
   });
