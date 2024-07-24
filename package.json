@@ -27,7 +27,7 @@
   ],
   "scripts": {
     "build": "tsup lib/index.ts --target node16 --format cjs,esm --dts --clean",
-    "watch": "npm run build -- --watch lib",
+    "examples": "npm run build && node examples/runner.js",
     "format": "prettier --write ./lib",
     "lint": "eslint --fix ./lib",
     "test": "vitest run --coverage",
