@@ -132,14 +132,13 @@ describe('#createProxy.web() using own http server', () => {
     request('http://127.0.0.1:8083', function () {}).end();
     await waitForClosed(source, proxyServer);
   });
-
-  it.skip('should skip proxyReq event when handling a request with header "expect: 100-continue" [https://www.npmjs.com/advisories/1486]', async () => {
+  it('should skip proxyReq event when handling a request with header "expect: 100-continue" [https://www.npmjs.com/advisories/1486]', async () => {
     const proxy = createProxy({
       target: 'http://127.0.0.1:8080',
     });
 
-    proxy.on('proxyReq', function (proxyReq, req, res, options) {
-      proxyReq.setHeader('X-Special-Proxy-Header', 'foobar');
+    proxy.on('proxyReq', function () {
+      expect.fail('proxyReq should not be called');
     });
 
     function requestHandler(req, res) {
@@ -152,8 +151,15 @@ describe('#createProxy.web() using own http server', () => {
       res.end();
       source.close();
       proxyServer.close();
-      expect(req.headers['x-special-proxy-header']).not.toEqual('foobar');
     });
+    source.on('checkContinue', (req, res) => {
+      res.writeContinue(() => {
+        // Without a timeout, events aren't emitted in the right order and the test fails.
+        setTimeout(() => {
+          source.emit('request', req, res);
+        }, 100);
+      });
+    })
 
     proxyServer.listen('8081');
     source.listen('8080');
@@ -173,9 +179,16 @@ describe('#createProxy.web() using own http server', () => {
     };
 
     const req = request(postOptions, function () {});
-    req.write(postData);
-    req.end();
+    let hasContinue = false;
+    req.on('continue', () => {
+      hasContinue = true;
+      req.write(postData);
+      req.end();
+    })
+
     await waitForClosed(proxyServer, source);
+
+    expect(hasContinue).toEqual(true);
   });
 
   it('should proxy the request and handle error via callback', async () => {
