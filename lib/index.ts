@@ -13,7 +13,7 @@ export type { ProxyServerOptions, ProxyTargetDetailed };
  * @param options Config object passed to the proxy
  * @returns Proxy object with handlers for `ws` and `web` requests
  */
-export function createProxy(options: ProxyServerOptions) {
+export function createProxy(options?: ProxyServerOptions) {
   return new ProxyServer(options);
 }
 

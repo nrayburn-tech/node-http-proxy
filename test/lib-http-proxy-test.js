@@ -23,16 +23,12 @@ Object.defineProperty(gen, 'port', {
 
 describe('lib/http-proxy.js', () => {
   describe('#createProxy', () => {
-    it('should throw without options', function () {
-      let error;
-      try {
-        createProxy();
-      } catch (e) {
-        error = e;
-      }
-
-      expect(error).toBeInstanceOf(Error);
+    it('should not throw without options', function () {
+      createProxy();
     });
+    it('should throw with empty options', function () {
+      createProxy({});
+    })
 
     it('should return an object otherwise', () => {
       const obj = createProxy({

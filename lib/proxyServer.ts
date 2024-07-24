@@ -125,11 +125,8 @@ export class ProxyServer extends EE3 {
 
   _server: http.Server | undefined;
 
-  constructor(options: ProxyServerOptions) {
+  constructor(options?: ProxyServerOptions) {
     super();
-    if (!options || Object.keys(options).length === 0) {
-      throw new Error('Options must not be empty.');
-    }
     options = options || {};
     options.prependPath = options.prependPath !== false;
 
