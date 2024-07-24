@@ -1,9 +1,8 @@
-/**
- *
- * @param {import('http').Server} servers
- * @returns {Promise<void>}
- */
-export async function waitForClosed(...servers) {
+export async function waitForClosed(
+  ...servers: {
+    addListener: (event: 'close', listener: () => void) => void;
+  }[]
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const openServers = new Set(servers);
     servers.forEach((server) => {
